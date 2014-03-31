@@ -3,12 +3,15 @@ from xlrd import *
 import datetime
 
 def main():
-    ''' Extract colums and convert date type
+    '''
+    Extract colums and convert date type
+
     Example:
     userid,starttime,endtime,timespan
     1,2011-03-01 14:00:00,2011-03-04 14:30:00,1800
+
     '''
-    fo = open('train', 'w')
+    fo = open('train.csv', 'w')
     fo.write('userid,starttime,endtime,timespan\n')
     book = open_workbook('trainingset1.xlsx')
     #print book.sheet_names()
