@@ -5,63 +5,67 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 
-def main():
-    test()
-
-def plot(user):
-    ''' 
-    user : [starttime,endtime,timespan]
+def plot(user, block=10):
     '''
-    # Generate y axis
-    span = 10
-    y = [0 for i in range(60 / span * 24)]
-
+        1. Split 24h to equal blocks
+        2. Determin whether the play time across block intervals
+           eg. 00:00 --> 01:00 across [0, 10],[10,20]... [50, 60]
+        3. Plot a point if play time across block intervals
+    '''
+    num_interval = 60 / block * 24
+    # Create y coordinate (stand for play time)
+    y = [0 for i in range(num_interval)]
+    # Create time intervals
     # [[0,10], [10,20], [20,30],...]
     intervals = []
-    for i in range(60 / span * 24):
-        intervals.append([i * span, (i + 1) * span])
-    print intervals
+    for i in range(num_interval):
+        intervals.append([i * block, (i + 1) * block])
 
     for t in user:
-        # End day > start day
-        if t[0].split()[0] < t[1].split()[0]:
-            print 'End day > start day'
-            start_min = conver_to_minute(t[0])
+        # Start time and end time in different day
+        start_time = t[0]
+        end_time = t[1]
+        if start_time.split()[0] < end_time.split()[0]:
+            # Split to two time interval
+            # Time1
+            start_min = conver_to_minute(start_time)
             end_min = 23 * 60 + 59
-            s_idx, e_idx = find_interval_idx(start_min, end_min, intervals)
-            #print s_idx, e_idx
-            sum_point(s_idx, e_idx, y)
 
+            # Find intervals index between play time
+            s_idx, e_idx = find_interval_idx(start_min, end_min, intervals)
+            count_playtime(s_idx, e_idx, y)
+
+            # Time2
             start_min = 0
-            end_min = conver_to_minute(t[1])
+            end_min = conver_to_minute(end_time)
             s_idx, e_idx = find_interval_idx(start_min, end_min, intervals)
-            #print s_idx, e_idx
-            sum_point(s_idx, e_idx, y)
+            count_playtime(s_idx, e_idx, y)
+
+        # Start time and end time in one day
         else:
-            start_min = conver_to_minute(t[0])
-            end_min = conver_to_minute(t[1])
+            start_min = conver_to_minute(start_time)
+            end_min = conver_to_minute(end_time)
             s_idx, e_idx = find_interval_idx(start_min, end_min, intervals)
-            sum_point(s_idx, e_idx, y)
-    #i = 0    
-    #for p in y:
-    #    if i % 6 == 0:
-    #        print ''
-    #    sys.stdout.write(str(p) + ' ')
-    #    i += 1
+            count_playtime(s_idx, e_idx, y)
+
+    # Clear previous line
     plt.cla()
+
+    # Define x axis
     ax=plt.gca()  
-    ax.set_xticks(np.linspace(0,144,24))  
+    ax.set_xticks(np.linspace(0, num_interval, 24))  
     ax.set_xticklabels( ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'))  
-    x = [i for i in range(60 / span * 24)] 
+    x = [i for i in range(num_interval)] 
+
+    # Smooth curve
     x_s = np.linspace(min(x),max(x),30)
     y_s = spline(x, y, x_s)
-    plt.xlabel(u'x')
-    plt.ylabel(u'y')
-    #plt.plot(x, y)
-    #plt.plot(x, np.polyval(y,x), 'r-')
-    plt.plot(x_s, y_s, 'r-')
-    #plt.show()
 
+    # Define x,y axis label
+    plt.xlabel(u'Time')
+    plt.ylabel(u'Play time')
+    # Plot a line
+    plt.plot(x_s, y_s, 'r-')
 
 def find_interval_idx(start_min, end_min, intervals):
     s_idx = 0
@@ -72,7 +76,7 @@ def find_interval_idx(start_min, end_min, intervals):
         e_idx += 1
     return s_idx, e_idx
 
-def sum_point(s_idx, e_idx, y):
+def count_playtime(s_idx, e_idx, y):
     for i in range(s_idx, e_idx):
         y[i] += 1
 
@@ -82,29 +86,27 @@ def conver_to_minute(time):
     #print hour, minutes
     return hour * 60 + minutes
 
-def test():
-    # Read user1
+def file_to_dict(file):
+    # Dictionary to store user play time
+    # {'1':['2011-03-01 13:00:00', '2011-03-01 14:00:00'], ...}
     user_info = {}
-    # {'1':[]}
-    for line in open('train.csv'):
-        #if line.split(',')[0].strip() == '2' or line.split(',')[0].strip() == '1' :
-        user_id, start_time, end_time, time_span = line.split(',')
-        user_info.setdefault(user_id,[])
-        user_info[user_id].append([start_time, end_time, time_span.strip()])
-    
-    for user_id, info in user_info.items():
-        #print user_id
-        plot(info)
-        #plt.savefig('./plot/' + user_id + '.png')
-        print 'Finish:',user_id
+    # Read dataset from user input
+    for line in open(sys.argv[1]):
+        user_id, start_time, end_time, _ = line.split(',')
+        user_info.setdefault(user_id, [])
+        user_info[user_id].append([start_time, end_time.strip()])
+    return user_info
 
-    # user_info['1'] can get all the infomation
-    plot(user_info['1'])
-    plot(user_info['2'])
-    plt.savefig('testplot2.png')
+def main():
+    user_info = file_to_dict(sys.argv[1])    
+    # Plot distribution for every user
+    for user_id, playtime in user_info.items():
+        plot(playtime, block=10)
+        plt.savefig('./plot/' + user_id + '.png')
+        print user_id + ' plot saved!'
 
 if __name__ == '__main__':
-   start_time = time.cloclk()
+   start_time = time.clock()
    main() 
-   end_time = time.cloclk()
+   end_time = time.clock()
    print 'Finished in: %ds' % (end_time - start_time)
