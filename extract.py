@@ -1,45 +1,59 @@
-# codeing:gbk
 from xlrd import *
 import datetime
+import sys
 
 def main():
     '''
-    Extract colums and convert date type
+    Extract colums from *.xls and convert to data type
 
     Example:
-    userid,starttime,endtime,timespan
-    1,2011-03-01 14:00:00,2011-03-04 14:30:00,1800
+    Input file:
+    ------------------------------------------------------------------------
+    ID,CONTENT_ID,CLASS_NAME,STARTTIME, ENDTIME,TIMESPAN,RECORD_DATE,USERID
+    ------------------------------------------------------------------------
+
+    Output file:
+    ------------------------------------------------------------------------
+    userid,    starttime,                 endtime
+    1,         2011-03-01 14:00:00,       2011-03-04 14:30:00
+    ...
+    ------------------------------------------------------------------------
 
     '''
-    fo = open('train.csv', 'w')
-    fo.write('userid,starttime,endtime,timespan\n')
-    book = open_workbook('trainingset1.xlsx')
-    #print book.sheet_names()
-    sheet = book.sheet_by_index(0)
-    #print sheet.nrows, sheet.ncols
+    # Output file
+    fo = open(sys.argv[1], 'w')
+    #fo.write('userid,starttime,endtime\n')
 
-    # User list to hash
+    # Input file
+    book = open_workbook(sys.argv[2])
+    sheet = book.sheet_by_index(0)
+
+    # User list to keep uniq user id
     user = []
     idx = 0
+    
+    # Read data from excel
     for i in range(1, sheet.nrows):
-        # Get User id and time span
-        user_id = sheet.row_values(i)[0]
-        # Different user
+        # Get User id
+        user_id = sheet.row_values(i)[7]
+        # Filter different user
         if user_id not in user:
             idx += 1
             user.append(user_id)
-        time_span = sheet.row_values(i)[3]
         # Get start time: year, month, day
-        year, month, day = xldate_as_tuple(sheet.row_values(i)[4], 0)[0:3]
+        year, month, day = xldate_as_tuple(sheet.row_values(i)[6], 0)[0:3]
         # Get start time: hour, monute, second
-        hour, minute = xldate_as_tuple(sheet.row_values(i)[1], 0)[3:5]
-        start_date = str(datetime.datetime(year, month, day, hour, minute, 0))
+        hour, minute = xldate_as_tuple(sheet.row_values(i)[3], 0)[3:5]
+        start_time = str(datetime.datetime(year, month, day, hour, minute, 0))
 
         # Get end time: year, month, day, hour, monute, second
-        year, month, day, hour, minute = xldate_as_tuple(sheet.row_values(i)[2], 0)[:5]
-        end_date = str(datetime.datetime(year, month, day, hour, minute, 0))
-        fo.write('%s,%s,%s,%s\n' % (str(idx), start_date, end_date, time_span))
+        year, month, day, hour, minute = xldate_as_tuple(sheet.row_values(i)[4], 0)[:5]
+        end_time = str(datetime.datetime(year, month, day, hour, minute, 0))
+
+        # Write userid, start time, end time to file
+        fo.write('%s,%s,%s\n' % (str(idx), start_time, end_time))
         fo.flush()
+    # Finish write file
     fo.close()
 
 if __name__ == '__main__':

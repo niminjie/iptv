@@ -1,11 +1,11 @@
 import datetime
+import time
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 
 def main():
-    # Test user1
     test()
 
 def plot(user):
@@ -104,4 +104,7 @@ def test():
     plt.savefig('testplot2.png')
 
 if __name__ == '__main__':
+   start_time = time.cloclk()
    main() 
+   end_time = time.cloclk()
+   print 'Finished in: %ds' % (end_time - start_time)
