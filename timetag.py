@@ -54,14 +54,26 @@ def plot(x, y):
     plt.ylabel(u'Play time')
 
     # Plot a line
-    plt.plot(x, y, 'g-')
-    plt.plot(x, y, 'gx')
+    plt.plot(x, y, 'r-')
+    #plt.plot(x, y, 'ro')
 
 
 def plot_split(extrem):
     for type, points in extrem.items():
+        if type == 'max':
+            style = 'b-'
+        elif type == 'rmax':
+            style = 'b-'
+        elif type == 'lmax':
+            style = 'b-'
+        elif type == 'min':
+            style = 'g-'
+        elif type == 'rmin':
+            style = 'g-'
+        elif type == 'lmin':
+            style = 'g-'
         for point in points:
-            plt.plot([point * 6, point * 6],[-1, 14], 'b-')
+            plt.plot([point * 6, point * 6],[-1, 14], style, linewidth=2)
 
 def smooth(x, y):
     x_s = [i for i in range(0, 144, 6)]
