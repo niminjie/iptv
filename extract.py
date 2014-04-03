@@ -23,11 +23,9 @@ def main():
     # Output file
     fo = open(sys.argv[1], 'w')
     #fo.write('userid,starttime,endtime\n')
-
     # Input file
     book = open_workbook(sys.argv[2])
     sheet = book.sheet_by_index(0)
-
     # User list to keep uniq user id
     user = []
     idx = 0
@@ -45,11 +43,9 @@ def main():
         # Get start time: hour, monute, second
         hour, minute = xldate_as_tuple(sheet.row_values(i)[3], 0)[3:5]
         start_time = str(datetime.datetime(year, month, day, hour, minute, 0))
-
         # Get end time: year, month, day, hour, monute, second
         year, month, day, hour, minute = xldate_as_tuple(sheet.row_values(i)[4], 0)[:5]
         end_time = str(datetime.datetime(year, month, day, hour, minute, 0))
-
         # Write userid, start time, end time to file
         fo.write('%s,%s,%s\n' % (str(idx), start_time, end_time))
         fo.flush()
