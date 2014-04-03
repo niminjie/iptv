@@ -146,7 +146,9 @@ def tags(x, y, extrem, threshhold=1):
                 break
     print interval
 
-def tags2(x, y, extrem, threhhold=1):
+def tags2(y, extrem, threshhold=0.1):
+    # Range of y
+    range = max(y) - min(y)
     interval = []
     seq_extrem = trans_extrem(extrem)
     print seq_extrem
@@ -156,17 +158,26 @@ def tags2(x, y, extrem, threhhold=1):
     for i in all_max:
         left = find_min_left(seq_extrem, i)
         right = find_min_right(seq_extrem, i)
+        #print 'Left:', left,'Max:',i,'Right:', right
+        if y[i] - y[left] < threshhold * range or y[i] - y[right] < threshhold * range:
+           seq_extrem[i] = '-'
+
+    all_max = find_all_max(seq_extrem)
+    for i in all_max:
+        left = find_min_left(seq_extrem, i)
+        right = find_min_right(seq_extrem, i)
         print 'Left:', left,'Max:',i,'Right:', right
         interval.append((left, right))
+
     if interval[0][0] != 0:
         interval.insert(0, (0,interval[0][0]))
+
     print interval
     return interval
 
 def find_min_left(extrem, idx):
     for i in range(idx, -1, -1):
         if extrem[i] == 'min':
-            #print 'Left',i
             return i
     return 0
 
@@ -196,13 +207,13 @@ def main(seq_user):
 
     # Smooth curve
     x_s, y_s = smooth(x, seq_user)
-    #plot(x_s, y_s)
+    plot(x_s, y_s)
     plot(x, seq_user)
 
     # Get all extrem point
     extrem_point_exact = find_mm_exact(y_s)
     extrem_point = find_mm(y_s)
-    intervals = tags2(x_s, y_s, extrem_point, 1)
+    intervals = tags2(y_s, extrem_point, threshhold=0.15)
 
     #print extrem_point_exact
     #print extrem_point
@@ -212,7 +223,6 @@ def main(seq_user):
     #print x_s
     #print y_s
     #print extrem_point
-
     plt.show()
 
 if __name__ == '__main__':
