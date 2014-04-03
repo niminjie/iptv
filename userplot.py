@@ -54,7 +54,7 @@ def plot(user, block=10):
     # Define x axis
     ax=plt.gca()  
     ax.set_xticks(np.linspace(0, num_interval, 24))  
-    ax.set_xticklabels( ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'))  
+    ax.set_xticklabels([str(i) for i in range(24)])
     x = [i for i in range(num_interval)] 
 
     # Smooth curve
