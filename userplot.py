@@ -106,7 +106,7 @@ def main():
         print user_id + ' plot saved!'
 
 if __name__ == '__main__':
-   start_time = time.clock()
-   main() 
-   end_time = time.clock()
-   print 'Finished in: %ds' % (end_time - start_time)
+    start_time = time.clock()
+    main() 
+    end_time = time.clock()
+    print 'Finished in: %ds' % (end_time - start_time)
