@@ -68,7 +68,8 @@ def plot(y, block=10):
     plt.xlabel(u'Time')
     plt.ylabel(u'Play time')
     # Plot a line
-    plt.plot(x_s, y_s, 'r-')
+    plt.plot(x_s, y_s, 'g-', linewidth = 2)
+    # plt.plot(x, y, 'r-', linewidth = 2)
 
 def find_interval_idx(start_min, end_min, intervals):
     s_idx = 0
@@ -105,10 +106,13 @@ def main():
     user_time = {}
     # Plot distribution for every user
     for user_id, playtime in user_info.items():
+        # if user_id != '5988':
+        #     continue
         y = split_time_range(playtime, block=10)
         user_time[user_id] = y
-        #plot(y, block=10)
-        #plt.show()
+        # plot(y, block=10)
+        # print user_id
+        # plt.show()
         #plt.savefig('./plot/' + user_id + '.png')
         #print user_id + ' plot saved!'
     return user_time

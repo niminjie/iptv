@@ -12,7 +12,7 @@ from scipy.interpolate import spline
 fo_pickle = file('user_time.pkl', 'wb')
 fi_pickle = file('user_time.pkl', 'rb')
 log = open('tag.log', 'w')
-DEBUG = True
+DEBUG = False
 
 def find_mm(user_seq):
     '''
@@ -50,7 +50,7 @@ def plot(x, y, clear = False):
     plt.xlabel(u'Time')
     plt.ylabel(u'Play time')
     # Plot a line
-    plt.plot(x, y, 'g-')
+    plt.plot(x, y, 'g-', linewidth=2)
     #plt.plot(x, y, 'ro')
 
 def plot_split_line(extreme):
@@ -72,8 +72,8 @@ def plot_split_line(extreme):
 
 def plot_split(intervals):
     for point in intervals:
-        plt.plot([point[0] * 6, point[0] * 6],[-1, 14], 'b-', linewidth=2)
-        plt.plot([point[1] * 6, point[1] * 6],[-1, 14], 'b-', linewidth=2)
+        plt.plot([point[0] * 6, point[0] * 6],[0, 4], 'b-', linewidth=2)
+        plt.plot([point[1] * 6, point[1] * 6],[0, 4], 'b-', linewidth=2)
 
 def smooth(x, y):
     x_s = [i for i in range(0, 144, 6)]
@@ -114,6 +114,7 @@ def tags(y, extreme, threshold=0):
         interval.append((left, right))
 
     if len(interval) <= 0:
+        interval.append((0, 23))
         return interval
     if interval[0][0] != 0:
         interval.insert(0, (0,interval[0][0]))
@@ -181,7 +182,10 @@ def main(seq_user):
     # Create x coordinate
     x = [i for i in range(144)] 
     # Smooth curve
-    x_s, y_s = smooth(x, seq_user)
+    # x_s, y_s = smooth(x, seq_user)
+    # Smooth curve
+    x_s = [i for i in range(0, 144, 6)]
+    y_s = spline(x, seq_user, x_s)
     if DEBUG:
         print >> log, ('Input smooth x and y:')
         print >> log , ', '.join([str(i) for i in x_s])
@@ -190,7 +194,6 @@ def main(seq_user):
     #logging.debug('Smooth x and y coordinate')
     #logging.debug('Smooth x: %s' % str(x_s))
     #logging.debug('Smooth y: %s' % str(y_s))
-    #plot(x_s, y_s)
     #plot(x, seq_user)
     # Get all extreme point
     extreme_point = find_mm(y_s)
@@ -198,9 +201,10 @@ def main(seq_user):
         print >> log, 'Find max point:'
         print >> log, ', '.join(extreme_point)
     intervals = tags(y_s, extreme_point, threshold=0)
+    plot(x_s, y_s)
+    plot_split(intervals)
+    plt.show()
     return intervals
-    #plot_split(intervals)
-    #plt.show()
 
 if __name__ == '__main__':
     # Handle log
@@ -213,14 +217,13 @@ if __name__ == '__main__':
     seq_user_dict = userplot.main()
     intervals = {}
     for user_id, seq_user in seq_user_dict.items():
-        #if user_id != '5983':
-        #    continue
-        #if user_id != '11540':
-        #    continue
+        if user_id != '5988':
+            continue
         if DEBUG:
             print >> log, ('Now Processing userid: %s' % user_id)
+        print user_id
         intervals[user_id] = main(seq_user)
         #logging.debug('user: %s, time interval:%s' % (user_id, str(intervals[userid])))
         #logging.debug('Userid %s\n%s' % (user_id, intervals[user_id]))
         #print intervals
-    #cPickle.dump(intervals, fo_pickle, True)
+    # cPickle.dump(intervals, fo_pickle, True)
