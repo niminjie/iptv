@@ -55,7 +55,7 @@ def plot(y, block=10):
     plt.cla()
 
     # Define x axis
-    ax=plt.gca()  
+    ax=plt.gca()
     ax.set_xticks(np.linspace(0, num_interval, 24))  
     ax.set_xticklabels([str(i) for i in range(24)])
     x = [i for i in range(num_interval)] 

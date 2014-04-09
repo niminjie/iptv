@@ -1,6 +1,7 @@
 import cPickle as pickle
 from math import sqrt
 from userplot import convert_to_minute
+from dfs import find_connection
 
 log = open('sim.log', 'w')
 DEBUG = True
@@ -85,32 +86,13 @@ def similarity(tags, key1, key2):
     #print rate2
     #print r
     #print '-' * 100
-    if r == 1:
-        print tags[key1]
-        print tags[key2]
-        print '-' * 100
+    #if r != 1:
+    #    print tags[key1]
+    #    print tags[key2]
+    #    print '-' * 100
     return r
     #print tags[key1], len_tag1, rate1
     #print tags[key2], len_tag2, rate2
-
-def sim_cosine(prefs, p1, p2):
-    mod1 = 0.0
-    mod2 = 0.0
-    metrix = 0.0
-    for key,value in prefs[p1].items():
-        if key in prefs[p2]:
-            metrix = metrix + value * prefs[p2][key] 
-
-    for key,value in prefs[p1].items():
-        mod1 = mod1 + value * value
-    for key,value in prefs[p2].items():
-        mod2 = mod2 + value * value
-
-    mod1 = sqrt(mod1) 
-    mod2 = sqrt(mod2) 
-    r = metrix / (mod1 * mod2)
-    #print("Person1 : %3s,Person2 : %3s Similarity:%3f" %(p1, p2, round(r, 2)))
-    return r
 
 def extract_class(user_dict):
     user_tag = {}
@@ -149,6 +131,7 @@ def main():
                 if i != j:
                     matrix[i][j] = similarity(tags, keys[i], keys[j])
         print matrix
+        # print find_connection(matrix)
 
 if __name__ == '__main__':
    main()

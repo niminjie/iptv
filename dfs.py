@@ -15,7 +15,8 @@ def find_connection(matrix):
     for i in range(1, n + 1):
         nodes = []
         dfs(matrix, i, n, nodes, visited)
-        if len(nodes) != 0:
+        # if len(nodes) != 0:
+        if len(nodes) > 0.8:
             connect.append(nodes)
     return connect
 

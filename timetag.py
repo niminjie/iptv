@@ -131,11 +131,11 @@ def find_min_left(extreme, idx):
     for i in range(idx, -1, -1):
         if extreme[i] == 'min':
             if DEBUG:
-                print >> log , 'Find left minium point: %d' % i
+                print >> log, 'Find left minium point: %d' % i
             #logging.info('Find left minium point: %d' % i)
             return i
     if DEBUG:
-        print >> log , 'Find left margin minium: 0'
+        print >> log, 'Find left margin minium: 0'
     #logging.info('Find left margin minium: 0')
     return 0
 
@@ -143,11 +143,11 @@ def find_min_right(extreme, idx):
     for i in range(idx, len(extreme)):
         if extreme[i] == 'min':
             if DEBUG:
-                print >> log , 'Find right minium point: %d' % i
+                print >> log, 'Find right minium point: %d' % i
             #logging.info('Find right minium point: %d' % i)
             return i
     if DEBUG:
-        print >> log , 'Find right margin minium: %d' % (len(extreme) - 1)
+        print >> log, 'Find right margin minium: %d' % (len(extreme) - 1)
     #logging.info('Find right margin minium: %d' % (len(extreme) - 1))
     return len(extreme) - 1
 
@@ -201,9 +201,9 @@ def main(seq_user):
         print >> log, 'Find max point:'
         print >> log, ', '.join(extreme_point)
     intervals = tags(y_s, extreme_point, threshold=0)
-    plot(x_s, y_s)
-    plot_split(intervals)
-    plt.show()
+    # plot(x_s, y_s)
+    # plot_split(intervals)
+    # plt.show()
     return intervals
 
 if __name__ == '__main__':
@@ -217,13 +217,13 @@ if __name__ == '__main__':
     seq_user_dict = userplot.main()
     intervals = {}
     for user_id, seq_user in seq_user_dict.items():
-        if user_id != '5988':
-            continue
+        # if user_id != '5988':
+        #     continue
         if DEBUG:
             print >> log, ('Now Processing userid: %s' % user_id)
-        print user_id
+        #print user_id
         intervals[user_id] = main(seq_user)
         #logging.debug('user: %s, time interval:%s' % (user_id, str(intervals[userid])))
         #logging.debug('Userid %s\n%s' % (user_id, intervals[user_id]))
         #print intervals
-    # cPickle.dump(intervals, fo_pickle, True)
+    cPickle.dump(intervals, fo_pickle, True)
