@@ -108,7 +108,7 @@ def main():
     for user_id, playtime in user_info.items():
         # if user_id != '5988':
         #     continue
-        y = split_time_range(playtime, block=10)
+        y = split_time_range(playtime, block=60)
         user_time[user_id] = y
         # plot(y, block=10)
         # print user_id
