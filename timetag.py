@@ -18,7 +18,7 @@ def find_mm(user_seq):
     '''
     Find minium and maxium index of user_seq list
     ---------------------------------------------------
-    Return:  {'min':[0, 6], 'max':1, 'lmin':2, 'rmin':3, 'lmax':4, 'rmax':5}
+    Return: {'min':[0, 6], 'max':1, 'lmin':2, 'rmin':3, 'lmax':4, 'rmax':5}
     min   :  p[i - 1] >  p[i] <  p[i + 1]
     max   :  p[i - 1] <  p[i] >  p[i + 1]
     '''
@@ -43,9 +43,9 @@ def plot(x, y, clear = False):
     if clear:
         plt.cla()
     # Define x axis
-    ax=plt.gca()  
-    ax.set_xticks([i for i in range(0, 144, 6)])  
-    ax.set_xticklabels([str(i) for i in range(24)])
+    # ax=plt.gca()  
+    # ax.set_xticks([i for i in range(0, num_interval, 6)])  
+    # ax.set_xticklabels([str(i) for i in range(24)])
     # Define x,y axis label
     plt.xlabel(u'Time')
     plt.ylabel(u'Play time')
@@ -75,8 +75,8 @@ def plot_split(intervals):
         plt.plot([point[0] * 6, point[0] * 6],[0, 4], 'b-', linewidth=2)
         plt.plot([point[1] * 6, point[1] * 6],[0, 4], 'b-', linewidth=2)
 
-def smooth(x, y):
-    x_s = [i for i in range(0, 144, 6)]
+def smooth(x, y, num_interval):
+    x_s = [i for i in range(0, num_interval, 6)]
     y_s = spline(x, y, x_s)
     for i in range(0, len(y_s)):
         if abs(y_s[i]) < 0.1:
@@ -178,14 +178,18 @@ def format_list(l):
             t[idx] = str(idx) + ',\t'
     return ''.join(t)
 
-def main(seq_user):
+def main(seq_user, num_interval):
     # Create x coordinate
-    x = [i for i in range(144)] 
+    x = [i for i in range(num_interval)] 
+    # print x
     # Smooth curve
     # x_s, y_s = smooth(x, seq_user)
     # Smooth curve
-    x_s = [i for i in range(0, 144, 6)]
-    y_s = spline(x, seq_user, x_s)
+    # x_s = [i for i in range(0, num_interval, 6)]
+    # x_s = x
+    # print x_s
+    # y_s = spline(x, seq_user, x_s)
+
     if DEBUG:
         print >> log, ('Input smooth x and y:')
         print >> log , ', '.join([str(i) for i in x_s])
@@ -194,16 +198,18 @@ def main(seq_user):
     #logging.debug('Smooth x and y coordinate')
     #logging.debug('Smooth x: %s' % str(x_s))
     #logging.debug('Smooth y: %s' % str(y_s))
-    #plot(x, seq_user)
+    plot(x, seq_user, num_interval)
     # Get all extreme point
-    extreme_point = find_mm(y_s)
+    # extreme_point = find_mm(y_s)
+    extreme_point = find_mm(seq_user)
     if DEBUG:
         print >> log, 'Find max point:'
         print >> log, ', '.join(extreme_point)
-    intervals = tags(y_s, extreme_point, threshold=0)
-    # plot(x_s, y_s)
-    # plot_split(intervals)
-    # plt.show()
+    intervals = tags(seq_user, extreme_point, threshold=0)
+    # intervals = tags(y_s, extreme_point, threshold=0)
+    # plot(x_s, y_s, num_interval)
+    plot_split(intervals)
+    plt.show()
     return intervals
 
 if __name__ == '__main__':
@@ -214,7 +220,7 @@ if __name__ == '__main__':
     #seq_user = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 2, 3, 1, 2, 1, 2, 6, 6, 6, 5, 3, 2, 2, 2, 6, 5, 5, 2, 2, 3, 1, 1, 1, 0, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     #user_info = userplot.file_to_dict(sys.argv[1])
     #seq_user = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 4, 5, 3, 3, 4, 4, 5, 3, 4, 5, 5, 4, 5, 5, 4, 3, 4, 3, 4, 4, 3, 3, 3, 2, 1, 2, 3, 3, 3, 4, 5, 4, 4, 5, 5, 6, 4, 5, 4, 4, 2, 2, 2, 3, 2, 3, 4, 3, 3, 3, 3, 2, 2, 2, 4, 6, 6, 7, 10, 9, 8, 7, 12, 13, 11, 11, 13, 11, 8, 7, 7, 4, 3, 2, 2, 2, 1, 0, 0, 0, 0]
-    seq_user_dict = userplot.main()
+    seq_user_dict, num_interval = userplot.main()
     intervals = {}
     for user_id, seq_user in seq_user_dict.items():
         # if user_id != '5988':
@@ -222,7 +228,7 @@ if __name__ == '__main__':
         if DEBUG:
             print >> log, ('Now Processing userid: %s' % user_id)
         #print user_id
-        intervals[user_id] = main(seq_user)
+        intervals[user_id] = main(seq_user, num_interval)
         #logging.debug('user: %s, time interval:%s' % (user_id, str(intervals[userid])))
         #logging.debug('Userid %s\n%s' % (user_id, intervals[user_id]))
         #print intervals

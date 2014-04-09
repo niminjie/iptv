@@ -110,14 +110,17 @@ def main():
     for user_id, playtime in user_info.items():
         if user_id != '1':
             continue
-        y = split_time_range(playtime, block=60)
+        block = 60
+        num_interval = 60 * 1.0 / block * 24
+        num_interval = int(num_interval)
+        y = split_time_range(playtime, block)
         user_time[user_id] = y
-        plot(y, block=60)
+        # plot(y, block)
         # print user_id
-        plt.show()
-        #plt.savefig('./plot/' + user_id + '.png')
-        #print user_id + ' plot saved!'
-    return user_time
+        # plt.show()
+        # plt.savefig('./plot/' + user_id + '.png')
+        # print user_id + ' plot saved!'
+    return user_time, num_interval
 
 if __name__ == '__main__':
     start_time = time.clock()
