@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 
 def split_time_range(user, block=10):
-    num_interval = 60 / block * 24
+    num_interval = 60 * 1.0 / block * 24
+    num_interval = int(num_interval)
     # Create y coordinate (stand for play time)
     y = [0 for i in range(num_interval)]
     # Create time intervals
@@ -50,7 +51,8 @@ def plot(y, block=10):
        eg. 00:00 --> 01:00 across [0, 10],[10,20]... [50, 60]
     3. Plot a point if play time across block intervals
     '''
-    num_interval = 60 / block * 24
+    num_interval = 60 * 1.0 / block * 24
+    num_interval = int(num_interval)
     # Clear previous line
     plt.cla()
 
@@ -69,7 +71,7 @@ def plot(y, block=10):
     plt.ylabel(u'Play time')
     # Plot a line
     plt.plot(x_s, y_s, 'g-', linewidth = 2)
-    # plt.plot(x, y, 'r-', linewidth = 2)
+    plt.plot(x, y, 'r-', linewidth = 2)
 
 def find_interval_idx(start_min, end_min, intervals):
     s_idx = 0
@@ -106,13 +108,13 @@ def main():
     user_time = {}
     # Plot distribution for every user
     for user_id, playtime in user_info.items():
-        # if user_id != '5988':
-        #     continue
+        if user_id != '1':
+            continue
         y = split_time_range(playtime, block=60)
         user_time[user_id] = y
-        # plot(y, block=10)
+        plot(y, block=60)
         # print user_id
-        # plt.show()
+        plt.show()
         #plt.savefig('./plot/' + user_id + '.png')
         #print user_id + ' plot saved!'
     return user_time
