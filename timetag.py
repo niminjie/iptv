@@ -94,7 +94,6 @@ def tags(y, extreme, threshold=0):
     all_max = find_all_max(y, extreme, threshold)
     #logging.debug('All max points: %s' % str(all_max))
 
-    #all_max = find_all_max(extreme)
     for i in all_max:
         if DEBUG:
             print >> log, '*' * 100
@@ -200,7 +199,7 @@ def main(seq_user):
     if DEBUG:
         print >> log, 'Find max point:'
         print >> log, ', '.join(extreme_point)
-    intervals = tags(y_s, extreme_point, threshold=0)
+    intervals = tags(y_s, extreme_point, threshold=0.5)
     # plot(x_s, y_s)
     # plot_split(intervals)
     # plt.show()
@@ -217,13 +216,14 @@ if __name__ == '__main__':
     seq_user_dict = userplot.main()
     intervals = {}
     for user_id, seq_user in seq_user_dict.items():
-        # if user_id != '5988':
+        # if user_id != '1':
         #     continue
         if DEBUG:
             print >> log, ('Now Processing userid: %s' % user_id)
         #print user_id
         intervals[user_id] = main(seq_user)
-        #logging.debug('user: %s, time interval:%s' % (user_id, str(intervals[userid])))
-        #logging.debug('Userid %s\n%s' % (user_id, intervals[user_id]))
-        #print intervals
+        # print intervals
+        # logging.debug('user: %s, time interval:%s' % (user_id, str(intervals[userid])))
+        # logging.debug('Userid %s\n%s' % (user_id, intervals[user_id]))
+        # print intervals
     cPickle.dump(intervals, fo_pickle, True)

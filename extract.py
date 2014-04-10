@@ -37,6 +37,7 @@ def main():
     for i in range(1, sheet.nrows):
         # Get User id
         user_id = sheet.row_values(i)[7]
+        timespan = sheet.row_values(i)[5]
         # Filter different user
         if user_id not in user:
             idx_user += 1
@@ -57,7 +58,7 @@ def main():
         year, month, day, hour, minute = xldate_as_tuple(sheet.row_values(i)[4], 0)[:5]
         end_time = str(datetime.datetime(year, month, day, hour, minute, 0))
         # Write userid, start time, end time to file
-        fo.write('%s,%s,%s,%s\n' % (str(idx_user), start_time, end_time, str(idx_class)))
+        fo.write('%s,%s,%s,%s,%s\n' % (str(idx_user), start_time, end_time, str(timespan), str(idx_class)))
         fo.flush()
     # Finish write file
     fo.close()

@@ -97,6 +97,7 @@ def file_to_dict(file):
     # Read dataset from user input
     for line in open(sys.argv[1]):
         user_id, start_time, end_time, class_time = line.split(',')
+        # user_id, start_time, end_time, timespan, class_time = line.split(',')
         user_info.setdefault(user_id, [])
         user_info[user_id].append([start_time, end_time, class_time.strip()])
     return user_info
