@@ -6,11 +6,16 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 
 def split_time_range(user, block=10):
+    '''
+    Input User info
+    block    default=10  10minutes per point
+    Return   [0,1,2,2,...,5]
+    '''
     num_interval = 60 / block * 24
     # Create y coordinate (stand for play time)
     y = [0 for i in range(num_interval)]
     # Create time intervals
-    # [[0,10], [10,20], [20,30],...]
+    # [[0,10], [10,20], [20,30],...,[1430,1440]]
     intervals = []
     for i in range(num_interval):
         intervals.append([i * block, (i + 1) * block])
@@ -90,32 +95,40 @@ def convert_to_minute(time):
     #print hour, minutes
     return hour * 60 + minutes
 
-def file_to_dict(file):
+def convert_to_hour(time):
+    return int(time.split(' ')[1].split(':')[0])
+
+def file_to_dict(f):
     # Dictionary to store user play time
     # {'1':['2011-03-01 13:00:00', '2011-03-01 14:00:00', '1'], ...}
     user_info = {}
     # Read dataset from user input
-    for line in open(sys.argv[1]):
-        user_id, start_time, end_time, class_time = line.split(',')
-        # user_id, start_time, end_time, timespan, class_time = line.split(',')
+    for line in open(f):
+        # user_id, start_time, end_time, class_time = line.split(',')
+        user_id, start_time, end_time, timespan, class_time = line.split(',')
         user_info.setdefault(user_id, [])
         user_info[user_id].append([start_time, end_time, class_time.strip()])
     return user_info
 
 def main():
+    # Input dataset from terminal
+    # {'1':{start:'', end:'', class::''}}
     user_info = file_to_dict(sys.argv[1])    
+
+    # Every users' time point (length = 144)
+    # {'1':[0,0,1,2,... ,3]}
     user_time = {}
+
     # Plot distribution for every user
     for user_id, playtime in user_info.items():
-        # if user_id != '5988':
-        #     continue
         y = split_time_range(playtime, block=10)
         user_time[user_id] = y
+
+        # Plot distribution and save to png
         # plot(y, block=10)
-        # print user_id
         # plt.show()
-        #plt.savefig('./plot/' + user_id + '.png')
-        #print user_id + ' plot saved!'
+        # plt.savefig('./plot/' + user_id + '.png')
+        # print user_id + ' plot saved!'
     return user_time
 
 if __name__ == '__main__':

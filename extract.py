@@ -32,7 +32,7 @@ def main():
     cls = []
     idx_user = 0
     idx_class = 0
-    
+
     # Read data from excel
     for i in range(1, sheet.nrows):
         # Get User id
