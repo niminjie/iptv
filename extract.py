@@ -1,7 +1,9 @@
 from xlrd import *
 import datetime
+import codecs
 import sys
 
+HASH = False
 def main():
     '''
     Extract colums from *.xls and convert to data type
@@ -20,10 +22,11 @@ def main():
     ------------------------------------------------------------------------------
     '''
     # Output file
+    # fo = codecs.open(sys.argv[2], 'w', 'utf-8')
     fo = open(sys.argv[2], 'w')
     fo_user = open(sys.argv[3], 'w')
     fo_class = open(sys.argv[4], 'w')
-    #fo.write('userid,starttime,endtime\n')
+    # fo.write('userid,starttime,endtime\n')
     # Input file
     book = open_workbook(sys.argv[1])
     sheet = book.sheet_by_index(0)
@@ -36,18 +39,26 @@ def main():
     # Read data from excel
     for i in range(1, sheet.nrows):
         # Get User id
-        user_id = sheet.row_values(i)[7]
-        timespan = sheet.row_values(i)[5]
-        # Filter different user
-        if user_id not in user:
-            idx_user += 1
-            user.append(user_id)
-            fo_user.write('%s,%s\n' % (str(idx_user), user_id))
+        id = sheet.row_values(i)[0]
+        content_id = sheet.row_values(i)[1]
         class_name = sheet.row_values(i)[2].encode('utf-8')
-        if class_name not in cls:
-            idx_class += 1
-            cls.append(class_name)
-            fo_class.write('%s,%s\n' % (str(idx_class), class_name))
+        # class_name = sheet.row_values(i)[2]
+        print class_name
+        timespan = sheet.row_values(i)[5]
+        user_id = sheet.row_values(i)[7]
+        # user_id = sheet.row_values(i)[7].encode('utf-8')
+
+        # Filter different user
+        if HASH:
+            if user_id not in user:
+                idx_user += 1
+                user.append(user_id)
+                fo_user.write('%s,%s\n' % (str(idx_user), user_id))
+        if HASH:
+            if class_name not in cls:
+                idx_class += 1
+                cls.append(class_name)
+                fo_class.write('%s,%s\n' % (str(idx_class), class_name))
         # Get start time: year, month, day
         year, month, day = xldate_as_tuple(sheet.row_values(i)[6], 0)[0:3]
         # Get start time: hour, monute, second
@@ -58,7 +69,10 @@ def main():
         year, month, day, hour, minute = xldate_as_tuple(sheet.row_values(i)[4], 0)[:5]
         end_time = str(datetime.datetime(year, month, day, hour, minute, 0))
         # Write userid, start time, end time to file
-        fo.write('%s,%s,%s,%s,%s\n' % (str(idx_user), start_time, end_time, str(timespan), str(idx_class)))
+        if HASH:
+            fo.write('%s,%s,%s,%s,%s\n' % (str(idx_user), start_time, end_time, str(timespan), str(idx_class)))
+        else:
+            fo.write('%s,%s,%s,%s,%s,%s,%s\n' % (str(id), str(content_id), str(class_name), str(start_time), str(end_time), str(timespan), str(user_id)))
         fo.flush()
     # Finish write file
     fo.close()

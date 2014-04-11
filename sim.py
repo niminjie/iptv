@@ -1,6 +1,8 @@
 import cPickle as pickle
+import codecs
 from math import sqrt
 from userplot import convert_to_minute
+from userplot import convert_to_hour
 from dfs import find_connection
 
 log = open('sim.log', 'w')
@@ -18,10 +20,14 @@ def convert_to_hour(time):
 
 def file_to_dict(train):
     user_dict = {}
+    # for line in codecs.open(train, 'r', 'utf-8'):
     for line in open(train, 'r'):
-        user_id, start, end, timespan, class_name = line.split(',')
+        id, content_id, class_name, start, end, timespan, user_id = line.split(',')
+        user_id = user_id.strip()
+        # print user_id
         user_dict.setdefault(user_id, [])
-        user_dict[user_id].append({'start':start, 'end':end, 'timespan':timespan, 'class':class_name.strip()})
+        # fo.write('%s,%s,%s,%s,%s,%s,%s\n' % (str(id), str(content_id), str(class_name), str(start_time), str(end_time), str(timespan), str(user_id)))
+        user_dict[user_id].append({'id':id, 'content_id':content_id, 'start':start, 'end':end, 'timespan':timespan, 'class':class_name})
     return user_dict
 
 def tag(user_dict, user_time):
@@ -34,6 +40,8 @@ def tag(user_dict, user_time):
         tag_list = {}
         tag = 1
         for idx, play in enumerate(play_list):
+            id = play['id']
+            content_id = play['content_id']
             start = play['start']
             end = play['end']
             timespan = play['timespan']
@@ -48,7 +56,8 @@ def tag(user_dict, user_time):
                         print >> log, '*' * 100
                         print >> log, 'Across: ', t
                         print >> log, '*' * 100
-                    play_list[idx] = {'start':start, 'end':end, 'class':class_name, 'timespan':timespan, 'tag':tag_list[t]}
+                    # play_list[idx] = {'start':start, 'end':end, 'class':class_name, 'timespan':timespan, 'tag':tag_list[t]}
+                    play_list[idx] = {'id':id, 'content_id':content_id, 'start':start, 'end':end, 'timespan':timespan, 'class':class_name, 'tag':tag_list[t]}
                     if DEBUG:
                         print >> log, 'Play_list', play_list[idx] 
                         print >> log, 'idx',  idx
@@ -137,9 +146,10 @@ def reverse(tag_dict):
 
 def main():
     fo_tag = open('tag_result.out', 'w')
-    user_pickle = file('user_time.pkl', 'rb')
+    user_pickle = file('user_time_all.pkl', 'rb')
     # {'1': [(0,7), (7,12), (12,18), (18,23)]}
     user_time = pickle.load(user_pickle)
+    # print user_time
     # user_time = {}
     # time = [(0, 7), (7, 12), (12, 18), (18, 23)]
     # for i in range(1, 26146):
@@ -147,7 +157,9 @@ def main():
     #print user_time
     if DEBUG:
         print >> log, 'Successfully read pickle!'
-    user_dict = file_to_dict('train.csv')
+    # user_dict = file_to_dict('train.csv')
+    user_dict = file_to_dict('train_all.csv')
+    # print user_dict['00264C2C9333'][0][2]
     tag_dict = tag(user_dict, user_time)
     # {'tag1':25200, 'tag2':14400, 'tag3':43200}
     tag_dict = reverse(tag_dict)
@@ -189,18 +201,27 @@ def main():
         #     print ''
         # print '-' * 100, '\n'
         # print user_dict[user_id]
+        # print user_dict['00264C2C9333']
         for play in user_dict[user_id]:
+            id = play['id']
+            content_id = play['content_id']
             start = play['start']
             end = play['end']
             timespan = play['timespan']
             class_name = play['class']
-            print result, user_id
-            print tag_dict[user_id]
             for idx in result:
+                # if len(idx) > 1:
+                #     print idx
                 for i in idx:
                     tag_s = tag_dict[user_id][keys[i - 1]][1]
-                    fo_tag.write('%s|%s|%s|%s|%s|%s\n' % (user_id, start, end, timespan, class_name, tag_s))
-                    fo_tag.flush()
+                    # print tag_s, start
+                    if tag_dict[user_id][keys[i - 1]][1][0] <= convert_to_hour(start) < tag_dict[user_id][keys[i - 1]][1][1]:
+                        # print tag_dict[user_id]
+                        t = [tag_dict[user_id][keys[j - 1]][1] for j in idx]
+                        s = str(t).lstrip('[').rstrip(']')
+                        fo_tag.write('%s|%s|%s|%s|%s|%s|%s|%s\n' % (id, content_id, start, end, timespan, class_name, user_id, s))
+                        fo_tag.flush()
+
         # print '-' * 100, '\n\n'
         # if len(result) == 1:
         #     one += 1

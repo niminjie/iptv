@@ -9,7 +9,7 @@ import time
 import cPickle
 from scipy.interpolate import spline
 
-fo_pickle = file('user_time.pkl', 'wb')
+fo_pickle = file('user_time_all.pkl', 'wb')
 fi_pickle = file('user_time.pkl', 'rb')
 log = open('tag.log', 'w')
 DEBUG = False
@@ -113,12 +113,12 @@ def tags(y, extreme, threshold=0):
         interval.append((left, right))
 
     if len(interval) <= 0:
-        interval.append((0, 23))
+        interval.append((0, 24))
         return interval
     if interval[0][0] != 0:
         interval.insert(0, (0,interval[0][0]))
-    if interval[-1][1] != 23:
-        interval.append((interval[-1][1], 23))
+    if interval[-1][1] != 24:
+        interval.append((interval[-1][1], 24))
 
     logging.info('Split final: %s' % interval) 
     if DEBUG:

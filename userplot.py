@@ -105,9 +105,12 @@ def file_to_dict(f):
     # Read dataset from user input
     for line in open(f):
         # user_id, start_time, end_time, class_time = line.split(',')
-        user_id, start_time, end_time, timespan, class_time = line.split(',')
+        # fo.write('%s,%s,%s,%s,%s,%s,%s\n' % (str(id), str(content_id), str(class_name), str(start_time), str(end_time), str(timespan), str(user_id)))
+        # print line
+        id, content_id, class_name, start_time, end_time, timespan, user_id = line.split(',')
+        user_id = user_id.strip()
         user_info.setdefault(user_id, [])
-        user_info[user_id].append([start_time, end_time, class_time.strip()])
+        user_info[user_id].append([start_time, end_time, class_name.strip()])
     return user_info
 
 def main():
