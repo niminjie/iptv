@@ -145,7 +145,7 @@ def reverse(tag_dict):
     return new_dict
 
 def main():
-    fo_tag = open('tag_result.out', 'w')
+    fo_tag = open('tag_result.csv', 'w')
     user_pickle = file('user_time_all.pkl', 'rb')
     # {'1': [(0,7), (7,12), (12,18), (18,23)]}
     user_time = pickle.load(user_pickle)
@@ -192,6 +192,7 @@ def main():
         # print '*' * 100
         # print tag_dict[user_id]
         result = find_connection(matrix)
+        result2tag = {}
         # print '-' * 100
         # print 'Userid:', user_id
         # print result
@@ -209,6 +210,7 @@ def main():
             end = play['end']
             timespan = play['timespan']
             class_name = play['class']
+            print result
             for idx in result:
                 # if len(idx) > 1:
                 #     print idx
@@ -218,16 +220,21 @@ def main():
                     if tag_dict[user_id][keys[i - 1]][1][0] <= convert_to_hour(start) < tag_dict[user_id][keys[i - 1]][1][1]:
                         # print tag_dict[user_id]
                         t = [tag_dict[user_id][keys[j - 1]][1] for j in idx]
+                        sum = 0
+                        for inter in t:
+                            span = inter[1] - inter[0]
+                            sum += span
+                        # print sum * 60
                         s = str(t).lstrip('[').rstrip(']')
-                        fo_tag.write('%s|%s|%s|%s|%s|%s|%s|%s\n' % (id, content_id, start, end, timespan, class_name, user_id, s))
+                        fo_tag.write('%s|%s|%s|%s|%s|%s|%s|%s|%s\n' % (id, content_id, start, end, timespan, class_name, user_id, s, str(sum * 60)))
                         fo_tag.flush()
 
-        # print '-' * 100, '\n\n'
-        # if len(result) == 1:
-        #     one += 1
-        # else:
-        #     multi += len(result)
-    # print one, multi
+        print '-' * 100, '\n\n'
+        if len(result) == 1:
+            one += 1
+        else:
+            multi += len(result)
+    print one, multi
     fo_tag.close()
 
 if __name__ == '__main__':
