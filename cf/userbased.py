@@ -1,14 +1,24 @@
 from math import sqrt
 from operator import itemgetter
+from recsys.algorithm.factorize import SVD
+from recsys.datamodel.data import Data
+from recsys.datamodel.item import Item
+from recsys.datamodel.user import User
+from recsys.evaluation.decision import PrecisionRecallF1
+from recsys.evaluation.prediction import RMSE, MAE
 import cPickle
+import recsys.algorithm
+recsys.algorithm.VERBOSE = True
+import sys
 
 # fo_pickle = file('remap.pkl', 'wb')
-fi_pickle = file('remap.pkl', 'rb')
+# fi_pickle = file('remap.pkl', 'rb')
 # tranverse_pickle = file('item_user.pkl', 'wb')
+# user_remap = open('user_remap.csv', 'w')
+
 DEBUG = False
 if DEBUG:
     log = open('userbased.log', 'w')
-# user_remap = open('user_remap.csv', 'w')
 
 def get_remap(fi):
     remap = {}
@@ -20,12 +30,14 @@ def get_remap(fi):
 
 def test_file2dict(fi):
     user_dict = {}
-    for line in open(fi):
+    for line in fi:
         id, content_id, class_name, start, end, timespan, user_id = line.split(',')
         user_id = user_id.strip()
         user_dict.setdefault(user_id, [])
         if class_name not in user_dict[user_id]:
             user_dict[user_id].append(class_name)
+        # if content_id not in user_dict[user_id]:
+        #     user_dict[user_id].append(content_id)
     return user_dict
 
 def prepareData(prefs, f) :
@@ -89,69 +101,51 @@ def getRecommendations(prefs, person, n=100, k=5):
         return rankings
     return rankings[0:k]
 
-def calRecallandPrecision(prefs, test_dict, remap, n=100,k=5):
-    print("n = %d,k = %d" %(n, k))
-    # idx = 0
-    hit = 0
-    n_recall = 0
-    n_precision = 0
-    for person in prefs.keys():
-        # if idx > 100:
-        #     break
-        print 'Now Processing person:', person
-        if person not in test_dict:
-            continue
-        # idx += 1
-        tu = test_dict[person]
-        for item in tu:
-            print item
-        result = getRecommendations(prefs, person, n, k, similarity)
-        print '-' * 100
-        for pui, item in result:
-            print item
-            if item in tu:
-                hit += 1
-        n_recall += len(tu)
-        if k > len(result):
-            n_precision += len(result)
-        else:
-            n_precision += k
-        # print '*' * 100
-    print "Hit : ", str(hit)
-    print n_recall, n_precision
-    # foutput.write('%d,%d,%d,%f,%f,%f,%f \r\n' %(hit,n,k,hit / (n_recall * 1.0),hit / (n_precision * 1.0),calRMSE(prefs,n,k,similarity),calMAE(prefs,n,k,similarity)))
-    # foutput.flush()
-    # print( "Cosine " + "Recall is :" + str(hit / (n_recall * 1.0)) + "  Precision is :" + str(hit / (n_precision * 1.0)))
-    #return [hit / (n_recall * 1.0),hit / (n_precision * 1.0)]
 
-def calRecallandPrecision_2(prefs, test_dict, remap, W, n=100,k=5):
-    print("n = %d,k = %d" %(n, k))
-    idx = 0
+def svd_rec(person, n):
+    svd = SVD()
+    train = Data()
+    train.load('./randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    svd.set_data(train)
+    svd.compute(k=5, min_values=0, pre_normalize=None, mean_center=False, post_normalize=True)
+    rec_list = svd.recommend(person, n, only_unknowns=False, is_row=False)
+    return rec_list
+
+def calRecallandPrecision(prefs, test_dict, remap, W, n=100, k=5, itemcf=False):
+    print("n = %d, k = %d" %(n, k))
     hit = 0
     n_recall = 0
     n_precision = 0
     for person in remap:
         # Exclude new user in test dastaset
-        if idx > 100:
-            continue
         if person not in test_dict:
             continue
-        idx += 1
         # Get different tag of one user '03EF1230124124' --->  [123,124,125]
         person2id_list = remap[person]
         # Handle each tag recommend list
         all_rec_result = []
         tu = test_dict[person]
         for each_tag in person2id_list:
-            print 'Now Processing person:', person,'\nAnd id:', each_tag
+            # print 'Now Processing person:', person,'\nAnd id:', each_tag
             # Program which test user watched
-            # result = getRecommendations(prefs, each_tag, n, k)
-            result = recommend(prefs, each_tag, W, k)
-            print result
+            if itemcf:
+                result = recommend(prefs, each_tag, W, k)
+            else:
+                result = svd_rec(int(each_tag), k)
+                # result = getRecommendations(prefs, each_tag, n, k)
+                # print result
+                # print '-' * 100
             for item in result:
-                all_rec_result.append(item[0])        
+                if itemcf:
+                    all_rec_result.append(item[0])        
+                else:
+                    all_rec_result.append(item[0].encode('utf-8'))        
         # Distinct same program 
         all_rec_result = set(all_rec_result)
+        # print '-' * 100
+        # print all_rec_result
+        # print tu
+        # print '-' * 100
         for item in all_rec_result:
             if item in tu:
                 hit += 1
@@ -161,10 +155,11 @@ def calRecallandPrecision_2(prefs, test_dict, remap, W, n=100,k=5):
         else:
             n_precision += k
         # print '*' * 100
-    print "Hit : ", str(hit)
-    print n_recall, n_precision
-    print hit * 1.0 / n_recall
-    print hit * 1.0 / n_precision
+    # print "Hit : ", str(hit)
+    # print n_recall, n_precision
+    print 'Recall: \t', hit * 1.0 / n_recall
+    print 'Precision:\t', hit * 1.0 / n_precision
+    print '-' * 30
 
 def process_input(prefs, f):
     uniq_tag = {}
@@ -236,8 +231,8 @@ def tranverse(train):
                 # item_user[i].append({user:train[user][i]})
                 item_user[i].append(user)
                 # print item_user[i]
-    cPickle.dump(item_user, tranverse_pickle, True)
-    # print item_user
+    # cPickle.dump(item_user, tranverse_pickle, True)
+    return item_user
 
 def itemSim(train):
     # Input :{'class1':[user1, user2]} 
@@ -273,57 +268,65 @@ def itemSim(train):
 def recommend(train, user_id, W, k=5):
     rank = {}
     ru = train[user_id]
-    # print ru
-    # print '*' * 100
     for i, pi in ru.items():
         sorted_sim = sorted(W[i].items(), key=itemgetter(1), reverse=True)[0:k]
-        # sorted_sim = sorted(W[i].items(), key=itemgetter(1), reverse=True)
-        # for item in sorted_sim:
-        #     print item[0]
-        # print '-' * 100
         for j, wj in sorted_sim:
-            # if j in ru:
-            #     continue
-            # print j
             rank.setdefault(j, 0.0)
             rank[j] += pi * wj
     rank = sorted(rank.items(), key=itemgetter(1), reverse=True)
-    # rec_list = [item[0] for item in rank]
     return rank[0:k]
 
-def main():
+def recommend_notag(train, user_id, W, k=5):
+    rank = {}
+    ru = train[user_id]
+    print ru
+    for i, pi in ru.items():
+        sorted_sim = sorted(W[i].items(), key=itemgetter(1), reverse=True)[0:k]
+        for j, wj in sorted_sim:
+            rank.setdefault(j, 0.0)
+            rank[j] += pi * wj
+    rank = sorted(rank.items(), key=itemgetter(1), reverse=True)
+    return rank[0:k]
+
+def test100_UserCF(f_train, f_test, f_remap, n, k):
     train_pre = {}
-    test_path = '../test_all.csv'
-    remap = get_remap(open('user_remap.csv', 'r'))
-    # merge_remap = {}
-    # for user, user_id in remap.items():
-    #     merge_remap.setdefault(user_id, [])
-    #     for user2, user_id2 in remap.items():
-    #         if user_id == user_id2 and user2 not in merge_remap[user_id]:
-    #             merge_remap[user_id].append(user2)
-    #             print user_id,merge_remap[user_id]
-    # print merge_remap
-    # Pickle.dump(merge_remap, fo_pickle, True)
-    # print merge_remap['00034C968355']
-    merge_remap = cPickle.load(fi_pickle)
-    test_dict = test_file2dict(test_path)
-    # print test_dict
-    prepareData(train_pre, open('train_rate.csv'))
-    # tranverse(train_pre)
-    train_pre_verse = cPickle.load(file('item_user.pkl', 'rb'))
+    remap = get_remap(f_remap)
+    merge_remap = {}
+    for user, user_id in remap.items():
+        merge_remap.setdefault(user_id, [])
+        for user2, user_id2 in remap.items():
+            if user_id == user_id2 and user2 not in merge_remap[user_id]:
+                merge_remap[user_id].append(user2)
+    test_dict = test_file2dict(f_test)
+    prepareData(train_pre, f_train)
+    train_pre_verse = tranverse(train_pre)
     W = itemSim(train_pre_verse)
-    # rec = recommend(train_pre, '1', W, k=5)
-    # for item in rec:
-    #     print item
-    calRecallandPrecision_2(train_pre, test_dict, merge_remap, W, n=4, k=5)
-    # rec = getRecommendations(train_pre, '1', n=100, k=5)
-    # for r in rec:
-    #     print r[1]
+    for i in range(1, n + 1):
+        for j in range(1, k + 1):
+            calRecallandPrecision(train_pre, test_dict, merge_remap, W, i, j, itemcf=False)
+
+def test100_ItemCF(f_train, f_test, f_remap,n, k):
+    train_pre = {}
+    remap = get_remap(f_remap)
+    merge_remap = {}
+    for user, user_id in remap.items():
+        merge_remap.setdefault(user_id, [])
+        for user2, user_id2 in remap.items():
+            if user_id == user_id2 and user2 not in merge_remap[user_id]:
+                merge_remap[user_id].append(user2)
+    test_dict = test_file2dict(f_test)
+    prepareData(train_pre, f_train)
+    train_pre_verse = tranverse(train_pre)
+    W = itemSim(train_pre_verse)
+    for i in range(1, n + 1):
+        for j in range(1, k + 1):
+            calRecallandPrecision(train_pre, test_dict, merge_remap, W, i, j, itemcf=True)
 
 if __name__ == '__main__':
-    # train_pre = {}
-    # process_input(train_pre, 'tag_result_origin.csv')
-    # process_mergeuser(train_pre, open('tmp', 'w'))
-    main()
+    test = open('../test_all.csv')
+    remap1 = open('randUser/remap1.csv')
+    train1 = open('randUser/rate1.csv')
+    test100_UserCF(train1, test, remap1, 20, 5)
+    # test100_ItemCF(train1, test, remap1, 20, 5)
     if DEBUG:
         log.close()

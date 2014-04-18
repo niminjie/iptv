@@ -1,3 +1,6 @@
+import random
+DEBUG = False
+
 def transverse(train):
     '''
        {'1':{'class1':5, 'class2':4}}
@@ -64,6 +67,36 @@ def process_mergeuser(prefs, fo, user_remap):
     fo.close()
     user_remap.close()
 
+def process_mergeuser_content(prefs, fo, user_remap):
+    '''
+       Split different tags to different users
+       Hash complex userid to number and output to file
+
+       eg.  00034C981F23,tag1  ----->   1
+            00034C981F23,tag2  ----->   2
+            ...
+    '''
+    # User index
+    user = 0
+    for user_id, plays in prefs.items():
+        uniq_tag = {}
+        for play in plays:
+            tag = play['tag']
+            content_id = play['content_id']
+            rate = play['rate']
+            if tag not in uniq_tag.keys():
+                user += 1
+                uniq_tag.setdefault(tag, user)
+                user_remap.write('%s,%s,%s\n' % (user_id, tag, user))
+                user_remap.flush()
+            fo.write('%s,%s,%s\n' % (uniq_tag[tag], content_id, rate))
+            fo.flush()
+    fo.close()
+    user_remap.close()
+
+def modify_tag(prefs, fo, user_remap):
+    uniq_tag = {}
+
 def process_input(prefs, f):
     '''
         Convert interval into tag and calculate rate
@@ -92,6 +125,24 @@ def process_input(prefs, f):
         prefs.setdefault(user_id, [])
         prefs[user_id].append({'interval':interval, 'id':id, content_id:rate, 'content_id':content_id, 'class_name':class_name, 'rate':rate, 'tag':uniq_tag[user_id][interval]})
 
+def process_input_oneday(prefs, f):
+    '''
+        Convert interval into tag and calculate rate
+        eg.  User:00034C981F23
+             (0,4),(4,20)  -----> tag1
+             (20,24)       -----> tag2
+             ...
+    '''
+    for line in open(f, 'r'):
+        id, content_id, start, end, timespan, class_name, user_id, interval, interspan = line.split('|')
+        rate = float(timespan) / 1440
+        # Tag = interval
+        if DEBUG:
+            print >>log, 'Add new user:', user_id
+        # {user_id:[playlist1, playlist2]}
+        prefs.setdefault(user_id, [])
+        prefs[user_id].append({'interval':interval, 'id':id, content_id:rate, 'content_id':content_id, 'class_name':class_name, 'rate':rate, 'tag':1})
+
 def get_remap(fi):
     remap = {}
     for line in fi:
@@ -109,3 +160,48 @@ def testfile_to_dict(fi):
         if class_name not in user_dict[user_id]:
             user_dict[user_id].append(class_name)
     return user_dict
+
+# def extract_train(fi, n, k):
+def extract_train(n):
+    '''
+        Generate K groups which contains n users
+    '''
+    fi = open('tag_result_origin.csv', 'r')
+    fo = open('randUser5.csv', 'w')
+    user_dict = {}
+    for line in fi:
+        user_id = line.split('|')[6]
+        user_dict.setdefault(user_id, [])
+        user_dict[user_id].append(line)
+    for i in range(n):
+        rand_key = random.choice(user_dict.keys())
+        for l in user_dict[rand_key]:
+            fo.write(l)
+        user_dict.pop(rand_key)
+
+if __name__ == '__main__':
+    train_pre = {}
+    '''
+        Time tag
+    '''
+    # process_input(train_pre, 'randUser/randUser1.csv')
+    # process_mergeuser(train_pre, open('randUser/merge1.csv', 'w'), open('randUser/remap.csv', 'w'))
+    # process_rate(open('randUser/merge1.csv'), open('randUser/rate1.csv', 'w'))
+    '''
+        No Tag
+    '''
+    # process_input_oneday(train_pre, 'randUser/randUser1.csv')
+    # process_mergeuser(train_pre, open('onedaySet/merge1.csv', 'w'), open('onedaySet/remap.csv', 'w'))
+    # process_rate(open('onedaySet/merge1.csv'), open('onedaySet/rate1.csv', 'w'))
+    '''
+        Content_id based tag
+    '''
+    # process_input(train_pre, 'randUser/Content/randUser1.csv')
+    # process_mergeuser_content(train_pre, open('randUser/Content/merge1.csv', 'w'), open('randUser/Content/remap1.csv', 'w'))
+    # process_rate(open('randUser/Content/merge1.csv'), open('randUser/Content/rate1.csv', 'w'))
+    '''
+        Content_id based no tag
+    '''
+    process_input_oneday(train_pre, 'randUser/randUser1.csv')
+    process_mergeuser_content(train_pre, open('onedaySet/Content/merge1.csv', 'w'), open('onedaySet/Content/remap1.csv', 'w'))
+    process_rate(open('onedaySet/Content/merge1.csv'), open('onedaySet/Content/rate1.csv', 'w'))

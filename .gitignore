@@ -3,3 +3,7 @@
 *.csv
 *.log
 *.pkl
+onedaySet/*
+TestResult/*
+randUser/*
+back_up/*
