@@ -101,7 +101,6 @@ def getRecommendations(prefs, person, n=100, k=5):
         return rankings
     return rankings[0:k]
 
-
 def svd_rec(person, n):
     svd = SVD()
     train = Data()
@@ -230,7 +229,6 @@ def tranverse(train):
             if user not in item_user[i]:
                 # item_user[i].append({user:train[user][i]})
                 item_user[i].append(user)
-                # print item_user[i]
     # cPickle.dump(item_user, tranverse_pickle, True)
     return item_user
 

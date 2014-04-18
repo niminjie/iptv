@@ -130,7 +130,7 @@ def process_input_oneday(prefs, f):
         Convert interval into tag and calculate rate
         eg.  User:00034C981F23
              (0,4),(4,20)  -----> tag1
-             (20,24)       -----> tag2
+             (20,24)       -----> tag1
              ...
     '''
     for line in open(f, 'r'):
@@ -181,27 +181,19 @@ def extract_train(n):
 
 if __name__ == '__main__':
     train_pre = {}
-    '''
-        Time tag
-    '''
+    ''' Time tag '''
     # process_input(train_pre, 'randUser/randUser1.csv')
     # process_mergeuser(train_pre, open('randUser/merge1.csv', 'w'), open('randUser/remap.csv', 'w'))
     # process_rate(open('randUser/merge1.csv'), open('randUser/rate1.csv', 'w'))
-    '''
-        No Tag
-    '''
+    ''' No Tag '''
     # process_input_oneday(train_pre, 'randUser/randUser1.csv')
     # process_mergeuser(train_pre, open('onedaySet/merge1.csv', 'w'), open('onedaySet/remap.csv', 'w'))
     # process_rate(open('onedaySet/merge1.csv'), open('onedaySet/rate1.csv', 'w'))
-    '''
-        Content_id based tag
-    '''
+    ''' Content_id based tag '''
     # process_input(train_pre, 'randUser/Content/randUser1.csv')
     # process_mergeuser_content(train_pre, open('randUser/Content/merge1.csv', 'w'), open('randUser/Content/remap1.csv', 'w'))
     # process_rate(open('randUser/Content/merge1.csv'), open('randUser/Content/rate1.csv', 'w'))
-    '''
-        Content_id based no tag
-    '''
+    ''' Content_id based no tag '''
     process_input_oneday(train_pre, 'randUser/randUser1.csv')
     process_mergeuser_content(train_pre, open('onedaySet/Content/merge1.csv', 'w'), open('onedaySet/Content/remap1.csv', 'w'))
     process_rate(open('onedaySet/Content/merge1.csv'), open('onedaySet/Content/rate1.csv', 'w'))
