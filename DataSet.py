@@ -19,11 +19,6 @@ class DataSet:
             arr[-1] = arr[-1].strip()
             data.append(tuple(arr))
         return data
-    
+
     def getData(self):
         return self.__data
-
-d = DataSet('./train_all.csv')
-print d.getData()
-# for item in d.data:
-#     print item[2]
