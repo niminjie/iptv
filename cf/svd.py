@@ -11,7 +11,7 @@ import sys
 def main():
     svd = SVD()
     train = Data()
-    train.load('./randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    train.load('./randUser/Content/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
     svd.set_data(train)
     svd.compute(k=5, min_values=0, pre_normalize=None, mean_center=False, post_normalize=True)
     rec_list = svd.recommend(200, n=5, only_unknowns=False, is_row=False)

@@ -211,6 +211,63 @@ class TimeSpliter():
         intervals = self._tags(y_s, extreme_point, threshold=0.5)
         return intervals
 
+'''
+def tag():
+    # Read from file
+    dataset = readfromfile(file)
+
+    # Split 24 hours into intervals which has 10mins
+    interval = [0, 10], [10, 20], ..., [1430, 1440]
+
+    # y stands for each interval: 0 -> [0,10], 1 -> [10,20]
+    y = [0, 1, 2, 3, 4, 0, 0, 0,...]
+
+    # Calculate every user's program
+    for user in users:
+        # Calculate program's time span
+        for program in user.programs:
+            if program.timespan in interval:
+                user.y[interval] += 1
+        # Find all max point
+        all_max_point = find_all_max()
+        # Find left and right min point around max point and tag it
+        for each_max_point in all_max_point:
+            left = find_left_min()
+            right = find_right_min()
+            # Tag a interval between left and right
+            tag = split(user, left, right)
+        # Calculate cosine similarity between each tag
+        sim_matrix = [sim_cosine(tag) for each tag]
+        # Find connected component
+        all_connected = find_connection(sim_matrix)
+
+def dfs(p):
+    # Node i is not visited
+    if not visited[p]:
+        # Set i visited
+        visited[p] = True
+        # Traverse all neighbour nodes
+        for i in range(1, n + 1):
+            # Filter and not visited
+            # Weight(similarity) should be larger than a threshold
+            # And node i isn't visited
+            if matrix[p][i] >= 0.78 and not visited[i]:
+                # Recursion search
+                dfs(p)
+
+# Find connected component
+def find_connection(matrix):
+    # At first all nodes are not visited
+    visited = False
+    # DFS all nodes
+    for i in range(1, n + 1):
+        nodes = []
+        dfs(matrix, i, n, nodes, visited)
+        # Find a connected component
+        if len(nodes) > 0:
+            connect.append(nodes)
+    return connect
+'''
 # if __name__ == '__main__':
 #     start_time = time.clock()
 #     train = DataSet('train_all.csv')
@@ -218,7 +275,6 @@ class TimeSpliter():
 #     user_dict = MakeDict.to_dict_byUser(train, columns, -1)
 #     timespliter = TimeSpliter(user_dict)
 #     time_tag = timespliter.tag_all_user()
-# 
 # 
 #     end_time = time.clock()
 #     print 'Finished in: %ds' % (end_time - start_time)

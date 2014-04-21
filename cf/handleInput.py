@@ -167,7 +167,7 @@ def extract_train(n):
         Generate K groups which contains n users
     '''
     fi = open('tag_result_origin.csv', 'r')
-    fo = open('randUser5.csv', 'w')
+    fo = open('./randUser2/randUser1.csv', 'w')
     user_dict = {}
     for line in fi:
         user_id = line.split('|')[6]
@@ -180,20 +180,21 @@ def extract_train(n):
         user_dict.pop(rand_key)
 
 if __name__ == '__main__':
+    # extract_train(100)
     train_pre = {}
     ''' Time tag '''
-    # process_input(train_pre, 'randUser/randUser1.csv')
-    # process_mergeuser(train_pre, open('randUser/merge1.csv', 'w'), open('randUser/remap.csv', 'w'))
-    # process_rate(open('randUser/merge1.csv'), open('randUser/rate1.csv', 'w'))
+    # process_input(train_pre, 'randUser/randUser2.csv')
+    # process_mergeuser(train_pre, open('randUser/merge2.csv', 'w'), open('randUser/remap2.csv', 'w'))
+    # process_rate(open('randUser/merge2.csv'), open('randUser/rate2.csv', 'w'))
     ''' No Tag '''
-    # process_input_oneday(train_pre, 'randUser/randUser1.csv')
-    # process_mergeuser(train_pre, open('onedaySet/merge1.csv', 'w'), open('onedaySet/remap.csv', 'w'))
-    # process_rate(open('onedaySet/merge1.csv'), open('onedaySet/rate1.csv', 'w'))
+    # process_input_oneday(train_pre, 'randUser/randUser2.csv')
+    # process_mergeuser(train_pre, open('onedaySet/merge2.csv', 'w'), open('onedaySet/remap2.csv', 'w'))
+    # process_rate(open('onedaySet/merge2.csv'), open('onedaySet/rate2.csv', 'w'))
     ''' Content_id based tag '''
-    # process_input(train_pre, 'randUser/Content/randUser1.csv')
-    # process_mergeuser_content(train_pre, open('randUser/Content/merge1.csv', 'w'), open('randUser/Content/remap1.csv', 'w'))
-    # process_rate(open('randUser/Content/merge1.csv'), open('randUser/Content/rate1.csv', 'w'))
+    # process_input(train_pre, 'randUser/Content/randUser2.csv')
+    # process_mergeuser_content(train_pre, open('randUser/Content/merge2.csv', 'w'), open('randUser/Content/remap2.csv', 'w'))
+    # process_rate(open('randUser/Content/merge2.csv'), open('randUser/Content/rate2.csv', 'w'))
     ''' Content_id based no tag '''
-    process_input_oneday(train_pre, 'randUser/randUser1.csv')
-    process_mergeuser_content(train_pre, open('onedaySet/Content/merge1.csv', 'w'), open('onedaySet/Content/remap1.csv', 'w'))
-    process_rate(open('onedaySet/Content/merge1.csv'), open('onedaySet/Content/rate1.csv', 'w'))
+    process_input_oneday(train_pre, 'randUser/randUser2.csv')
+    process_mergeuser_content(train_pre, open('onedaySet/Content/merge2.csv', 'w'), open('onedaySet/Content/remap2.csv', 'w'))
+    process_rate(open('onedaySet/Content/merge2.csv'), open('onedaySet/Content/rate2.csv', 'w'))

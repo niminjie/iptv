@@ -149,12 +149,6 @@ def main():
     user_pickle = file('user_time_all.pkl', 'rb')
     # {'1': [(0,7), (7,12), (12,18), (18,23)]}
     user_time = pickle.load(user_pickle)
-    # print user_time
-    # user_time = {}
-    # time = [(0, 7), (7, 12), (12, 18), (18, 23)]
-    # for i in range(1, 26146):
-    #     user_time[str(i)] = time
-    #print user_time
     if DEBUG:
         print >> log, 'Successfully read pickle!'
     # user_dict = file_to_dict('train.csv')

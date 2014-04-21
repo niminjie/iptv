@@ -28,16 +28,18 @@ def get_remap(fi):
         remap[user.strip()] = user_id
     return remap
 
-def test_file2dict(fi):
+def test_file2dict(fi, content):
     user_dict = {}
-    for line in fi:
+    for line in open(fi):
         id, content_id, class_name, start, end, timespan, user_id = line.split(',')
         user_id = user_id.strip()
         user_dict.setdefault(user_id, [])
-        if class_name not in user_dict[user_id]:
-            user_dict[user_id].append(class_name)
-        # if content_id not in user_dict[user_id]:
-        #     user_dict[user_id].append(content_id)
+        if content:
+            if content_id not in user_dict[user_id]:
+                user_dict[user_id].append(content_id)
+        else:
+            if class_name not in user_dict[user_id]:
+                user_dict[user_id].append(class_name)
     return user_dict
 
 def prepareData(prefs, f) :
@@ -101,17 +103,15 @@ def getRecommendations(prefs, person, n=100, k=5):
         return rankings
     return rankings[0:k]
 
-def svd_rec(person, n):
+def svd_rec(train, person, n):
     svd = SVD()
-    train = Data()
-    train.load('./randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
     svd.set_data(train)
     svd.compute(k=5, min_values=0, pre_normalize=None, mean_center=False, post_normalize=True)
     rec_list = svd.recommend(person, n, only_unknowns=False, is_row=False)
     return rec_list
 
-def calRecallandPrecision(prefs, test_dict, remap, W, n=100, k=5, itemcf=False):
-    print("n = %d, k = %d" %(n, k))
+def calRecallandPrecision(svd_train, prefs, test_dict, remap, W, n=100, k=5, method='ucf'):
+    # print("n = %d, k = %d" %(n, k))
     hit = 0
     n_recall = 0
     n_precision = 0
@@ -127,24 +127,24 @@ def calRecallandPrecision(prefs, test_dict, remap, W, n=100, k=5, itemcf=False):
         for each_tag in person2id_list:
             # print 'Now Processing person:', person,'\nAnd id:', each_tag
             # Program which test user watched
-            if itemcf:
+            if method == 'icf':
                 result = recommend(prefs, each_tag, W, k)
-            else:
-                result = svd_rec(int(each_tag), k)
-                # result = getRecommendations(prefs, each_tag, n, k)
+                # print result
+            elif method == 'ucf':
+                result = getRecommendations(prefs, each_tag, n, k)
                 # print result
                 # print '-' * 100
+            elif method == 'svd':
+                result = svd_rec(svd_train, int(each_tag), k)
             for item in result:
-                if itemcf:
+                if method == 'icf':
                     all_rec_result.append(item[0])        
+                elif method == 'ucf':
+                    all_rec_result.append(item[1])        
                 else:
                     all_rec_result.append(item[0].encode('utf-8'))        
         # Distinct same program 
         all_rec_result = set(all_rec_result)
-        # print '-' * 100
-        # print all_rec_result
-        # print tu
-        # print '-' * 100
         for item in all_rec_result:
             if item in tu:
                 hit += 1
@@ -153,12 +153,12 @@ def calRecallandPrecision(prefs, test_dict, remap, W, n=100, k=5, itemcf=False):
             n_precision += len(all_rec_result)
         else:
             n_precision += k
-        # print '*' * 100
-    # print "Hit : ", str(hit)
-    # print n_recall, n_precision
-    print 'Recall: \t', hit * 1.0 / n_recall
-    print 'Precision:\t', hit * 1.0 / n_precision
-    print '-' * 30
+    recall = hit * 1.0 / n_recall
+    precision = hit * 1.0 / n_precision
+    # print 'Recall: \t', hit * 1.0 / n_recall
+    # print 'Precision:\t', hit * 1.0 / n_precision
+    # print '-' * 30
+    return round(precision, 3), round(recall, 3)
 
 def process_input(prefs, f):
     uniq_tag = {}
@@ -255,12 +255,6 @@ def itemSim(train):
             W[i][j] = cij * 1.0 / sqrt(N[i] * N[j])
             # print W[i][j]
     items = W.keys()
-    # for i in items:
-    #     for j in items:
-    #         if i == j:
-    #             continue
-    #         if W[i][j] > 0.3:
-    #             # print W[i][j],
     return W
 
 def recommend(train, user_id, W, k=5):
@@ -286,7 +280,8 @@ def recommend_notag(train, user_id, W, k=5):
     rank = sorted(rank.items(), key=itemgetter(1), reverse=True)
     return rank[0:k]
 
-def test100_UserCF(f_train, f_test, f_remap, n, k):
+def test100_UserCF(f_train, f_test, f_remap, n, k, content):
+    svd_train = None
     train_pre = {}
     remap = get_remap(f_remap)
     merge_remap = {}
@@ -295,15 +290,14 @@ def test100_UserCF(f_train, f_test, f_remap, n, k):
         for user2, user_id2 in remap.items():
             if user_id == user_id2 and user2 not in merge_remap[user_id]:
                 merge_remap[user_id].append(user2)
-    test_dict = test_file2dict(f_test)
+    test_dict = test_file2dict(f_test, content)
     prepareData(train_pre, f_train)
     train_pre_verse = tranverse(train_pre)
     W = itemSim(train_pre_verse)
-    for i in range(1, n + 1):
-        for j in range(1, k + 1):
-            calRecallandPrecision(train_pre, test_dict, merge_remap, W, i, j, itemcf=False)
+    return calRecallandPrecision(svd_train, train_pre, test_dict, merge_remap, W, n, k, method='ucf')
 
-def test100_ItemCF(f_train, f_test, f_remap,n, k):
+def test100_ItemCF(f_train, f_test, f_remap, n, k, content):
+    svd_train = None
     train_pre = {}
     remap = get_remap(f_remap)
     merge_remap = {}
@@ -312,19 +306,147 @@ def test100_ItemCF(f_train, f_test, f_remap,n, k):
         for user2, user_id2 in remap.items():
             if user_id == user_id2 and user2 not in merge_remap[user_id]:
                 merge_remap[user_id].append(user2)
-    test_dict = test_file2dict(f_test)
+    test_dict = test_file2dict(f_test, content)
     prepareData(train_pre, f_train)
     train_pre_verse = tranverse(train_pre)
     W = itemSim(train_pre_verse)
-    for i in range(1, n + 1):
-        for j in range(1, k + 1):
-            calRecallandPrecision(train_pre, test_dict, merge_remap, W, i, j, itemcf=True)
+    # for i in range(1, n + 1):
+    #     for j in range(1, k + 1):
+    #         calRecallandPrecision(train_pre, test_dict, merge_remap, W, i, j, itemcf=True)
+    return calRecallandPrecision(svd_train, train_pre, test_dict, merge_remap, W, n, k, method='icf')
+
+def test100_SVD(svd_train, f_train, f_test, f_remap, n, k, content):
+    train_pre = {}
+    remap = get_remap(f_remap)
+    merge_remap = {}
+    for user, user_id in remap.items():
+        merge_remap.setdefault(user_id, [])
+        for user2, user_id2 in remap.items():
+            if user_id == user_id2 and user2 not in merge_remap[user_id]:
+                merge_remap[user_id].append(user2)
+    test_dict = test_file2dict(f_test, content)
+    prepareData(train_pre, f_train)
+    train_pre_verse = tranverse(train_pre)
+    W = itemSim(train_pre_verse)
+    return calRecallandPrecision(svd_train, train_pre, test_dict, merge_remap, W, n, k, method='svd')
 
 if __name__ == '__main__':
-    test = open('../test_all.csv')
-    remap1 = open('randUser/remap1.csv')
-    train1 = open('randUser/rate1.csv')
-    test100_UserCF(train1, test, remap1, 20, 5)
-    # test100_ItemCF(train1, test, remap1, 20, 5)
+    test = '../test_all.csv'
+    svd_train = Data()
+    report = open('experiment_2.csv', 'w')
+    for i in range(1, 21):
+        for j in range(1, 6):
+            s = str(i) + ',' + str(j) + ','
+            print 'n = %d, j = %d' % (i, j)
+            remap = open('randUser/remap2.csv')
+            train = open('randUser/rate2.csv')
+            ucf = test100_UserCF(train, test, remap, i, j, False)
+            s += str(ucf[0]) + ',' + str(ucf[1]) + ','
+            print 'UCF:'
+            print 'Precision:\t', ucf[0]
+            print 'Recall: \t', ucf[1]
+            print '-' * 100
+            remap = open('randUser/remap2.csv')
+            train = open('randUser/rate2.csv')
+            icf = test100_ItemCF(train, test, remap, i, j, False)
+            s += str(icf[0]) + ',' + str(icf[1]) + ','
+            print 'ICF:'
+            print 'Precision:\t', icf[0]
+            print 'Recall: \t', icf[1]
+            print '-' * 100
+            remap_con = open('randUser/Content/remap2.csv')
+            train_con = open('randUser/Content/rate2.csv')
+            ucf_con = test100_UserCF(train_con, test, remap_con, i, j, True)
+            s += str(ucf_con[0]) + ',' + str(ucf_con[1]) + ','
+            print 'UCF Content:'
+            print 'Precision:\t', ucf_con[0]
+            print 'Recall: \t', ucf_con[1]
+            print '-' * 100
+            remap_con = open('randUser/Content/remap2.csv')
+            train_con = open('randUser/Content/rate2.csv')
+            icf_con = test100_ItemCF(train_con, test, remap_con, i, j, True)
+            s += str(icf_con[0]) + ',' + str(icf_con[1]) + ','
+            print 'ICF Content:'
+            print 'Precision:\t', icf_con[0]
+            print 'Recall: \t', icf_con[1]
+            print '-' * 100
+
+            remap_oneday = open('onedaySet/remap2.csv')
+            train_oneday = open('onedaySet/rate2.csv')
+            ucf_notag = test100_UserCF(train_oneday, test, remap_oneday, i, j, False)
+            s += str(ucf_notag[0]) + ',' + str(ucf_notag[1]) + ','
+            print 'UCF No Tag:'
+            print 'Precision:\t', ucf_notag[0]
+            print 'Recall: \t', ucf_notag[1]
+            print '-' * 100
+
+            remap_oneday = open('onedaySet/remap2.csv')
+            train_oneday = open('onedaySet/rate2.csv')
+            icf_notag = test100_ItemCF(train_oneday, test, remap_oneday, i, j, False)
+            s += str(icf_notag[0]) + ',' + str(icf_notag[1]) + ','
+            print 'ICF No Tag:'
+            print 'Precision:\t', icf_notag[0]
+            print 'Recall: \t', icf_notag[1]
+            print '-' * 100
+
+            remap_oneday_con = open('onedaySet/Content/remap2.csv')
+            train_oneday_con = open('onedaySet/Content/rate2.csv')
+            ucf_con_notag = test100_UserCF(train_oneday_con, test, remap_oneday_con, i, j, True)
+            s += str(ucf_con_notag[0]) + ',' + str(ucf_con_notag[1]) + ','
+            print 'UCF Content No Tag:'
+            print 'Precision:\t', ucf_con_notag[0]
+            print 'Recall: \t', ucf_con_notag[1]
+            print '-' * 100
+            remap_oneday_con = open('onedaySet/Content/remap2.csv')
+            train_oneday_con = open('onedaySet/Content/rate2.csv')
+            icf_con_notag = test100_ItemCF(train_oneday_con, test, remap_oneday_con, i, j, True)
+            s += str(icf_con_notag[0]) + ',' + str(icf_con_notag[1]) + ','
+            print 'ICF Content No Tag:'
+            print 'Precision:\t', icf_con_notag[0]
+            print 'Recall: \t', icf_con_notag[1]
+            print '-' * 100
+
+            remap = open('randUser/remap2.csv')
+            train = open('randUser/rate2.csv')
+            svd_train.load('./randUser/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            svd = test100_SVD(svd_train, train, test, remap, i, j, False)
+            s += str(svd[0]) + ',' + str(svd[1]) + ','
+            print 'SVD:'
+            print 'Precision:\t', svd[0]
+            print 'Recall: \t', svd[1]
+            print '-' * 100
+
+            remap_oneday = open('onedaySet/remap2.csv')
+            train_oneday = open('onedaySet/rate2.csv')
+            svd_train.load('./onedaySet/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            svd_notag = test100_SVD(svd_train, train_oneday, test, remap_oneday, i, j, False)
+            s += str(svd_notag[0]) + ',' + str(svd_notag[1]) + ','
+            print 'SVD No Tag:'
+            print 'Precision:\t', svd_notag[0]
+            print 'Recall: \t', svd_notag[1]
+            print '-' * 100
+
+            remap = open('randUser/Content/remap2.csv')
+            train = open('randUser/Content/rate2.csv')
+            svd_train.load('./randUser/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            svd_con = test100_SVD(svd_train, train, test, remap, i, j, True)
+            s += str(svd_con[0]) + ',' + str(svd_con[1]) + ','
+            print 'SVD Content:'
+            print 'Precision:\t', svd_con[0]
+            print 'Recall: \t', svd_con[1]
+            print '-' * 100
+
+            remap_oneday = open('onedaySet/Content/remap2.csv')
+            train_oneday = open('onedaySet/Content/rate2.csv')
+            svd_train.load('./onedaySet/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            svd_con_notag = test100_SVD(svd_train, train_oneday, test, remap_oneday, i, j, True)
+            s += str(svd_con_notag[0]) + ',' + str(svd_con_notag[1]) + '\n'
+            print 'SVD Content No Tag:'
+            print 'Precision:\t', svd_con_notag[0]
+            print 'Recall: \t', svd_con_notag[1]
+            print '*' * 100
+            report.write(s)         
+            report.flush()
+    report.close()
     if DEBUG:
         log.close()
