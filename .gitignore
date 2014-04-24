@@ -5,6 +5,7 @@
 *.csv
 *.log
 *.pkl
+*.out
 onedaySet/*
 TestResult/*
 randUser/*
