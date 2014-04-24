@@ -1,4 +1,6 @@
+.gitignore
 *.pyc
+*.out
 .DS_Store
 *.csv
 *.log
