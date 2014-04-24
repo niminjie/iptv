@@ -333,120 +333,120 @@ def test100_SVD(svd_train, f_train, f_test, f_remap, n, k, content):
 if __name__ == '__main__':
     test = '../test_all.csv'
     svd_train = Data()
-    report = open('experiment_2.csv', 'w')
+    report = open('experiment_2_rate.csv', 'w')
     for i in range(1, 21):
         for j in range(1, 6):
             s = str(i) + ',' + str(j) + ','
-            print 'n = %d, j = %d' % (i, j)
-            remap = open('randUser/remap2.csv')
-            train = open('randUser/rate2.csv')
+            print 'n = %d, k = %d' % (i, j)
+            remap = open('randUser/DiffRate/remap1.csv')
+            train = open('randUser/DiffRate/rate1.csv')
             ucf = test100_UserCF(train, test, remap, i, j, False)
-            s += str(ucf[0]) + ',' + str(ucf[1]) + ','
+            # s += str(ucf[0]) + ',' + str(ucf[1]) + ','
             print 'UCF:'
             print 'Precision:\t', ucf[0]
             print 'Recall: \t', ucf[1]
             print '-' * 100
-            remap = open('randUser/remap2.csv')
-            train = open('randUser/rate2.csv')
+            remap = open('randUser/DiffRate/remap1.csv')
+            train = open('randUser/DiffRate/rate1.csv')
             icf = test100_ItemCF(train, test, remap, i, j, False)
-            s += str(icf[0]) + ',' + str(icf[1]) + ','
+            # s += str(icf[0]) + ',' + str(icf[1]) + ','
             print 'ICF:'
             print 'Precision:\t', icf[0]
             print 'Recall: \t', icf[1]
             print '-' * 100
-            remap_con = open('randUser/Content/remap2.csv')
-            train_con = open('randUser/Content/rate2.csv')
-            ucf_con = test100_UserCF(train_con, test, remap_con, i, j, True)
-            s += str(ucf_con[0]) + ',' + str(ucf_con[1]) + ','
-            print 'UCF Content:'
-            print 'Precision:\t', ucf_con[0]
-            print 'Recall: \t', ucf_con[1]
-            print '-' * 100
-            remap_con = open('randUser/Content/remap2.csv')
-            train_con = open('randUser/Content/rate2.csv')
-            icf_con = test100_ItemCF(train_con, test, remap_con, i, j, True)
-            s += str(icf_con[0]) + ',' + str(icf_con[1]) + ','
-            print 'ICF Content:'
-            print 'Precision:\t', icf_con[0]
-            print 'Recall: \t', icf_con[1]
-            print '-' * 100
+            # remap_con = open('randUser/Content/remap2.csv')
+            # train_con = open('randUser/Content/rate2.csv')
+            # ucf_con = test100_UserCF(train_con, test, remap_con, i, j, True)
+            # s += str(ucf_con[0]) + ',' + str(ucf_con[1]) + ','
+            # print 'UCF Content:'
+            # print 'Precision:\t', ucf_con[0]
+            # print 'Recall: \t', ucf_con[1]
+            # print '-' * 100
+            # remap_con = open('randUser/Content/remap2.csv')
+            # train_con = open('randUser/Content/rate2.csv')
+            # icf_con = test100_ItemCF(train_con, test, remap_con, i, j, True)
+            # s += str(icf_con[0]) + ',' + str(icf_con[1]) + ','
+            # print 'ICF Content:'
+            # print 'Precision:\t', icf_con[0]
+            # print 'Recall: \t', icf_con[1]
+            # print '-' * 100
 
-            remap_oneday = open('onedaySet/remap2.csv')
-            train_oneday = open('onedaySet/rate2.csv')
-            ucf_notag = test100_UserCF(train_oneday, test, remap_oneday, i, j, False)
-            s += str(ucf_notag[0]) + ',' + str(ucf_notag[1]) + ','
-            print 'UCF No Tag:'
-            print 'Precision:\t', ucf_notag[0]
-            print 'Recall: \t', ucf_notag[1]
-            print '-' * 100
+            # remap_oneday = open('onedaySet/remap2.csv')
+            # train_oneday = open('onedaySet/rate2.csv')
+            # ucf_notag = test100_UserCF(train_oneday, test, remap_oneday, i, j, False)
+            # s += str(ucf_notag[0]) + ',' + str(ucf_notag[1]) + ','
+            # print 'UCF No Tag:'
+            # print 'Precision:\t', ucf_notag[0]
+            # print 'Recall: \t', ucf_notag[1]
+            # print '-' * 100
 
-            remap_oneday = open('onedaySet/remap2.csv')
-            train_oneday = open('onedaySet/rate2.csv')
-            icf_notag = test100_ItemCF(train_oneday, test, remap_oneday, i, j, False)
-            s += str(icf_notag[0]) + ',' + str(icf_notag[1]) + ','
-            print 'ICF No Tag:'
-            print 'Precision:\t', icf_notag[0]
-            print 'Recall: \t', icf_notag[1]
-            print '-' * 100
+            # remap_oneday = open('onedaySet/remap2.csv')
+            # train_oneday = open('onedaySet/rate2.csv')
+            # icf_notag = test100_ItemCF(train_oneday, test, remap_oneday, i, j, False)
+            # s += str(icf_notag[0]) + ',' + str(icf_notag[1]) + ','
+            # print 'ICF No Tag:'
+            # print 'Precision:\t', icf_notag[0]
+            # print 'Recall: \t', icf_notag[1]
+            # print '-' * 100
 
-            remap_oneday_con = open('onedaySet/Content/remap2.csv')
-            train_oneday_con = open('onedaySet/Content/rate2.csv')
-            ucf_con_notag = test100_UserCF(train_oneday_con, test, remap_oneday_con, i, j, True)
-            s += str(ucf_con_notag[0]) + ',' + str(ucf_con_notag[1]) + ','
-            print 'UCF Content No Tag:'
-            print 'Precision:\t', ucf_con_notag[0]
-            print 'Recall: \t', ucf_con_notag[1]
-            print '-' * 100
-            remap_oneday_con = open('onedaySet/Content/remap2.csv')
-            train_oneday_con = open('onedaySet/Content/rate2.csv')
-            icf_con_notag = test100_ItemCF(train_oneday_con, test, remap_oneday_con, i, j, True)
-            s += str(icf_con_notag[0]) + ',' + str(icf_con_notag[1]) + ','
-            print 'ICF Content No Tag:'
-            print 'Precision:\t', icf_con_notag[0]
-            print 'Recall: \t', icf_con_notag[1]
-            print '-' * 100
+            # remap_oneday_con = open('onedaySet/Content/remap2.csv')
+            # train_oneday_con = open('onedaySet/Content/rate2.csv')
+            # ucf_con_notag = test100_UserCF(train_oneday_con, test, remap_oneday_con, i, j, True)
+            # s += str(ucf_con_notag[0]) + ',' + str(ucf_con_notag[1]) + ','
+            # print 'UCF Content No Tag:'
+            # print 'Precision:\t', ucf_con_notag[0]
+            # print 'Recall: \t', ucf_con_notag[1]
+            # print '-' * 100
+            # remap_oneday_con = open('onedaySet/Content/remap2.csv')
+            # train_oneday_con = open('onedaySet/Content/rate2.csv')
+            # icf_con_notag = test100_ItemCF(train_oneday_con, test, remap_oneday_con, i, j, True)
+            # s += str(icf_con_notag[0]) + ',' + str(icf_con_notag[1]) + ','
+            # print 'ICF Content No Tag:'
+            # print 'Precision:\t', icf_con_notag[0]
+            # print 'Recall: \t', icf_con_notag[1]
+            # print '-' * 100
 
-            remap = open('randUser/remap2.csv')
-            train = open('randUser/rate2.csv')
-            svd_train.load('./randUser/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            remap = open('randUser/DiffRate/remap1.csv')
+            train = open('randUser/DiffRate/rate1.csv')
+            svd_train.load('./randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
             svd = test100_SVD(svd_train, train, test, remap, i, j, False)
-            s += str(svd[0]) + ',' + str(svd[1]) + ','
+            # s += str(svd[0]) + ',' + str(svd[1]) + ','
             print 'SVD:'
             print 'Precision:\t', svd[0]
             print 'Recall: \t', svd[1]
             print '-' * 100
 
-            remap_oneday = open('onedaySet/remap2.csv')
-            train_oneday = open('onedaySet/rate2.csv')
-            svd_train.load('./onedaySet/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-            svd_notag = test100_SVD(svd_train, train_oneday, test, remap_oneday, i, j, False)
-            s += str(svd_notag[0]) + ',' + str(svd_notag[1]) + ','
-            print 'SVD No Tag:'
-            print 'Precision:\t', svd_notag[0]
-            print 'Recall: \t', svd_notag[1]
-            print '-' * 100
+            # remap_oneday = open('onedaySet/remap2.csv')
+            # train_oneday = open('onedaySet/rate2.csv')
+            # svd_train.load('./onedaySet/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            # svd_notag = test100_SVD(svd_train, train_oneday, test, remap_oneday, i, j, False)
+            # s += str(svd_notag[0]) + ',' + str(svd_notag[1]) + ','
+            # print 'SVD No Tag:'
+            # print 'Precision:\t', svd_notag[0]
+            # print 'Recall: \t', svd_notag[1]
+            # print '-' * 100
 
-            remap = open('randUser/Content/remap2.csv')
-            train = open('randUser/Content/rate2.csv')
-            svd_train.load('./randUser/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-            svd_con = test100_SVD(svd_train, train, test, remap, i, j, True)
-            s += str(svd_con[0]) + ',' + str(svd_con[1]) + ','
-            print 'SVD Content:'
-            print 'Precision:\t', svd_con[0]
-            print 'Recall: \t', svd_con[1]
-            print '-' * 100
+            # remap = open('randUser/Content/remap2.csv')
+            # train = open('randUser/Content/rate2.csv')
+            # svd_train.load('./randUser/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            # svd_con = test100_SVD(svd_train, train, test, remap, i, j, True)
+            # s += str(svd_con[0]) + ',' + str(svd_con[1]) + ','
+            # print 'SVD Content:'
+            # print 'Precision:\t', svd_con[0]
+            # print 'Recall: \t', svd_con[1]
+            # print '-' * 100
 
-            remap_oneday = open('onedaySet/Content/remap2.csv')
-            train_oneday = open('onedaySet/Content/rate2.csv')
-            svd_train.load('./onedaySet/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-            svd_con_notag = test100_SVD(svd_train, train_oneday, test, remap_oneday, i, j, True)
-            s += str(svd_con_notag[0]) + ',' + str(svd_con_notag[1]) + '\n'
-            print 'SVD Content No Tag:'
-            print 'Precision:\t', svd_con_notag[0]
-            print 'Recall: \t', svd_con_notag[1]
-            print '*' * 100
-            report.write(s)         
-            report.flush()
+            # remap_oneday = open('onedaySet/Content/remap2.csv')
+            # train_oneday = open('onedaySet/Content/rate2.csv')
+            # svd_train.load('./onedaySet/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+            # svd_con_notag = test100_SVD(svd_train, train_oneday, test, remap_oneday, i, j, True)
+            # s += str(svd_con_notag[0]) + ',' + str(svd_con_notag[1]) + '\n'
+            # print 'SVD Content No Tag:'
+            # print 'Precision:\t', svd_con_notag[0]
+            # print 'Recall: \t', svd_con_notag[1]
+            # print '*' * 100
+            # report.write(s)         
+            # report.flush()
     report.close()
     if DEBUG:
         log.close()

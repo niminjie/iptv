@@ -1,6 +1,8 @@
 .gitignore
 *.pyc
 *.out
+*.base
+*.test
 .DS_Store
 *.csv
 *.log

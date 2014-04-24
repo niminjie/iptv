@@ -1,6 +1,8 @@
 import random
+import myPickle
 DEBUG = False
 
+video_info = myPickle.load('../video.pkl')
 def transverse(train):
     '''
        {'1':{'class1':5, 'class2':4}}
@@ -109,11 +111,13 @@ def process_input(prefs, f):
     uniq_tag = {}
     # idx stands for tag number of same user
     idx = {}
+    err = []
     for line in open(f, 'r'):
         id, content_id, start, end, timespan, class_name, user_id, interval, interspan = line.split('|')
         idx.setdefault(user_id, 1)
         uniq_tag.setdefault(user_id, {})
-        rate = float(timespan) / float(interspan)
+        # rate = float(timespan) / float(interspan)
+        rate = float(timespan) / float(video_info[content_id])
         # Tag = interval
         if interval not in uniq_tag[user_id].keys():
             # print interval, idx[user_id]
@@ -135,7 +139,8 @@ def process_input_oneday(prefs, f):
     '''
     for line in open(f, 'r'):
         id, content_id, start, end, timespan, class_name, user_id, interval, interspan = line.split('|')
-        rate = float(timespan) / 1440
+        # rate = float(timespan) / 1440
+        rate = float(timespan) / float(video_info[content_id])
         # Tag = interval
         if DEBUG:
             print >>log, 'Add new user:', user_id
@@ -183,9 +188,9 @@ if __name__ == '__main__':
     # extract_train(100)
     train_pre = {}
     ''' Time tag '''
-    # process_input(train_pre, 'randUser/randUser2.csv')
-    # process_mergeuser(train_pre, open('randUser/merge2.csv', 'w'), open('randUser/remap2.csv', 'w'))
-    # process_rate(open('randUser/merge2.csv'), open('randUser/rate2.csv', 'w'))
+    process_input(train_pre, 'randUser/randUser1.csv')
+    process_mergeuser(train_pre, open('randUser/DiffRate/merge1.csv', 'w'), open('randUser/DiffRate/remap1.csv', 'w'))
+    process_rate(open('randUser/DiffRate/merge1.csv'), open('randUser/DiffRate/rate1.csv', 'w'))
     ''' No Tag '''
     # process_input_oneday(train_pre, 'randUser/randUser2.csv')
     # process_mergeuser(train_pre, open('onedaySet/merge2.csv', 'w'), open('onedaySet/remap2.csv', 'w'))
@@ -195,6 +200,6 @@ if __name__ == '__main__':
     # process_mergeuser_content(train_pre, open('randUser/Content/merge2.csv', 'w'), open('randUser/Content/remap2.csv', 'w'))
     # process_rate(open('randUser/Content/merge2.csv'), open('randUser/Content/rate2.csv', 'w'))
     ''' Content_id based no tag '''
-    process_input_oneday(train_pre, 'randUser/randUser2.csv')
-    process_mergeuser_content(train_pre, open('onedaySet/Content/merge2.csv', 'w'), open('onedaySet/Content/remap2.csv', 'w'))
-    process_rate(open('onedaySet/Content/merge2.csv'), open('onedaySet/Content/rate2.csv', 'w'))
+    # process_input_oneday(train_pre, 'randUser/randUser2.csv')
+    # process_mergeuser_content(train_pre, open('onedaySet/Content/merge2.csv', 'w'), open('onedaySet/Content/remap2.csv', 'w'))
+    # process_rate(open('onedaySet/Content/merge2.csv'), open('onedaySet/Content/rate2.csv', 'w'))
