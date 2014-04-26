@@ -188,9 +188,12 @@ if __name__ == '__main__':
     # extract_train(100)
     train_pre = {}
     ''' Time tag '''
-    process_input(train_pre, 'randUser/randUser1.csv')
-    process_mergeuser(train_pre, open('randUser/DiffRate/merge1.csv', 'w'), open('randUser/DiffRate/remap1.csv', 'w'))
-    process_rate(open('randUser/DiffRate/merge1.csv'), open('randUser/DiffRate/rate1.csv', 'w'))
+    # process_input(train_pre, 'randUser/randUser1.csv')
+    # process_mergeuser(train_pre, open('randUser/DiffRate/merge1.csv', 'w'), open('randUser/DiffRate/remap1.csv', 'w'))
+    # process_rate(open('randUser/DiffRate/merge1.csv'), open('randUser/DiffRate/rate1.csv', 'w'))
+    process_input(train_pre, 'Test/test_rand1.csv')
+    process_mergeuser(train_pre, open('Test/test_merge1.csv', 'w'), open('Test/test_remap1.csv', 'w'))
+    process_rate(open('Test/test_merge1.csv'), open('Test/test_rate1.csv', 'w'))
     ''' No Tag '''
     # process_input_oneday(train_pre, 'randUser/randUser2.csv')
     # process_mergeuser(train_pre, open('onedaySet/merge2.csv', 'w'), open('onedaySet/remap2.csv', 'w'))
