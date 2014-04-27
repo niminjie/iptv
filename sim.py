@@ -1,8 +1,6 @@
 import cPickle as pickle
 import codecs
 from math import sqrt
-from userplot import convert_to_minute
-from userplot import convert_to_hour
 from dfs import find_connection
 
 log = open('sim.log', 'w')
@@ -145,14 +143,14 @@ def reverse(tag_dict):
     return new_dict
 
 def main():
-    fo_tag = open('tag_result.csv', 'w')
-    user_pickle = file('user_time_all.pkl', 'rb')
+    fo_tag = open('test_tag_result.csv', 'w')
+    user_pickle = file('test_user_time_all.pkl', 'rb')
     # {'1': [(0,7), (7,12), (12,18), (18,23)]}
     user_time = pickle.load(user_pickle)
     if DEBUG:
         print >> log, 'Successfully read pickle!'
     # user_dict = file_to_dict('train.csv')
-    user_dict = file_to_dict('train_all.csv')
+    user_dict = file_to_dict('cf/Test/test_rand1.csv')
     # print user_dict['00264C2C9333'][0][2]
     tag_dict = tag(user_dict, user_time)
     # {'tag1':25200, 'tag2':14400, 'tag3':43200}

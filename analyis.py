@@ -21,5 +21,6 @@ def main():
     print 'User len', len(user_list)
     print 'Content len', len(content_list)
     print 'Class len', len(class_list)
+
 if __name__ == '__main__':
    main() 

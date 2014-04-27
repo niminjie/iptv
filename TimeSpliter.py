@@ -14,8 +14,23 @@ class TimeSpliter():
         self.data = data
 
     def split_all_user(self, block=10):
+        '''
+        Split All user's time interval
+        =====================================================
+        Args:
+            block: Describe how long(minute) the interval is
+        -----------------------------------------------------
+        Returns:
+            A dict contains every user's play interval
+            Key: user id
+            Value: interval
+            eg. {'1':[0,0,1,2,... ,3]}
+        -----------------------------------------------------
+        Raises:
+            None
+        =====================================================
+        '''
         # Every users' time point (length = 144)
-        # {'1':[0,0,1,2,... ,3]}
         user_time = {}
         for user_id, playtime in self.data.items():
             y = self.split_time_range(playtime, block=10)
@@ -24,9 +39,19 @@ class TimeSpliter():
 
     def split_time_range(self, user, block=10):
         '''
-        Input User info
-        block    default=10  10minutes per point
-        Return   [0,1,2,2,...,5]
+        Split specific user's time interval
+        =====================================================
+        Args:
+            user: User id to split
+            block: Describe how long(minute) the interval is
+        -----------------------------------------------------
+        Returns:
+            A list contains user's play interval
+            eg. [0,0,1,2,... ,3]
+        -----------------------------------------------------
+        Raises:
+            None
+        =====================================================
         '''
         num_interval = 60 / block * 24
 
@@ -81,6 +106,18 @@ class TimeSpliter():
             y[i] += 1
 
     def _convert_to_minute(self, time):
+        '''
+        =====================================================
+        Convert 24h time format to minute
+        -----------------------------------------------------
+        Args:
+            time: 24h time format
+            eg. 20:10
+        -----------------------------------------------------
+        Return: 
+            minutes during from 00:00 
+        =====================================================
+        '''
         hour = int(time.split(' ')[1].split(':')[0])
         minutes = int(time.split(' ')[1].split(':')[1])
         #print hour, minutes
@@ -88,11 +125,17 @@ class TimeSpliter():
 
     def _find_mm(self, user_seq):
         '''
+        =====================================================
         Find minium and maxium index of user_seq list
-        ---------------------------------------------------
-        Return:  {'min':[0, 6], 'max':1, 'lmin':2, 'rmin':3, 'lmax':4, 'rmax':5}
-        min   :  p[i - 1] >  p[i] <  p[i + 1]
-        max   :  p[i - 1] <  p[i] >  p[i + 1]
+        -----------------------------------------------------
+        Args:
+            user_seq: 
+        -----------------------------------------------------
+        Return: 
+            [min, max, -, -, max, min, ...]
+            min   :  p[i - 1] >  p[i] <  p[i + 1]
+            max   :  p[i - 1] <  p[i] >  p[i + 1]
+        =====================================================
         '''
         extreme = []
         extreme.append('-')
@@ -211,70 +254,12 @@ class TimeSpliter():
         intervals = self._tags(y_s, extreme_point, threshold=0.5)
         return intervals
 
-'''
-def tag():
-    # Read from file
-    dataset = readfromfile(file)
-
-    # Split 24 hours into intervals which has 10mins
-    interval = [0, 10], [10, 20], ..., [1430, 1440]
-
-    # y stands for each interval: 0 -> [0,10], 1 -> [10,20]
-    y = [0, 1, 2, 3, 4, 0, 0, 0,...]
-
-    # Calculate every user's program
-    for user in users:
-        # Calculate program's time span
-        for program in user.programs:
-            if program.timespan in interval:
-                user.y[interval] += 1
-        # Find all max point
-        all_max_point = find_all_max()
-        # Find left and right min point around max point and tag it
-        for each_max_point in all_max_point:
-            left = find_left_min()
-            right = find_right_min()
-            # Tag a interval between left and right
-            tag = split(user, left, right)
-        # Calculate cosine similarity between each tag
-        sim_matrix = [sim_cosine(tag) for each tag]
-        # Find connected component
-        all_connected = find_connection(sim_matrix)
-
-def dfs(p):
-    # Node i is not visited
-    if not visited[p]:
-        # Set i visited
-        visited[p] = True
-        # Traverse all neighbour nodes
-        for i in range(1, n + 1):
-            # Filter and not visited
-            # Weight(similarity) should be larger than a threshold
-            # And node i isn't visited
-            if matrix[p][i] >= 0.78 and not visited[i]:
-                # Recursion search
-                dfs(p)
-
-# Find connected component
-def find_connection(matrix):
-    # At first all nodes are not visited
-    visited = False
-    # DFS all nodes
-    for i in range(1, n + 1):
-        nodes = []
-        dfs(matrix, i, n, nodes, visited)
-        # Find a connected component
-        if len(nodes) > 0:
-            connect.append(nodes)
-    return connect
-'''
-# if __name__ == '__main__':
-#     start_time = time.clock()
-#     train = DataSet('train_all.csv')
-#     columns = ['id','content_id','class_name','start','end','timespan','user_id']
-#     user_dict = MakeDict.to_dict_byUser(train, columns, -1)
-#     timespliter = TimeSpliter(user_dict)
-#     time_tag = timespliter.tag_all_user()
-# 
-#     end_time = time.clock()
-#     print 'Finished in: %ds' % (end_time - start_time)
+if __name__ == '__main__':
+    start_time = time.clock()
+    train = DataSet('train_all.csv')
+    columns = ['id','content_id','class_name','start','end','timespan','user_id']
+    user_dict = MakeDict.to_dict_byUser(train, columns, -1)
+    timespliter = TimeSpliter(user_dict)
+    time_tag = timespliter.tag_all_user()
+    end_time = time.clock()
+    print 'Finished in: %ds' % (end_time - start_time)
