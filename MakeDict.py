@@ -1,5 +1,15 @@
 from DataSet import DataSet
 
+def prepare_train(f) :
+    prefs = {}
+    for line in open(f):
+        line_split = line.split(',')
+        if not line_split[0] in prefs:
+            prefs[line_split[0]] = {line_split[1]:float(line_split[2].strip())}
+        else: 
+            prefs[line_split[0]][line_split[1]] = float(line_split[2].strip())
+    return prefs
+
 def to_dict_byUser(data, columns, user_id_idx):
     '''
     Args:
