@@ -204,9 +204,9 @@ if __name__ == '__main__':
     # process_mergeuser_content(train_pre, open('randUser/Content/merge2.csv', 'w'), open('randUser/Content/remap2.csv', 'w'))
     # process_rate(open('randUser/Content/merge2.csv'), open('randUser/Content/rate2.csv', 'w'))
     'Test ---------------------------------------------------------------------'
-    process_input(train_pre, 'Test/test_tag_result.csv')
-    process_mergeuser_content(train_pre, open('Test/test_merge1.csv', 'w'), open('Test/test_remap1.csv', 'w'))
-    process_rate(open('Test/test_merge1.csv'), open('Test/test_rate1.csv', 'w'))
+    # process_input(train_pre, 'Test/test_tag_result.csv')
+    # process_mergeuser_content(train_pre, open('Test/test_merge1.csv', 'w'), open('Test/test_remap1.csv', 'w'))
+    # process_rate(open('Test/test_merge1.csv'), open('Test/test_rate1.csv', 'w'))
     ''' Content_id based no tag '''
     # process_input_oneday(train_pre, 'randUser/randUser2.csv')
     # process_mergeuser_content(train_pre, open('onedaySet/Content/merge2.csv', 'w'), open('onedaySet/Content/remap2.csv', 'w'))

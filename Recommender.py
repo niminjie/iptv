@@ -2,10 +2,15 @@ from DataSet import DataSet
 from MakeDict import *
 from math import sqrt
 from operator import itemgetter
-import recsys.algorithm
 from recsys.algorithm.factorize import SVD
-recsys.algorithm.VERBOSE = False
+from recsys.datamodel.data import Data
+from recsys.datamodel.item import Item
+from recsys.datamodel.user import User
+from recsys.evaluation.decision import PrecisionRecallF1
+from recsys.evaluation.prediction import RMSE, MAE
 import cPickle
+import recsys.algorithm
+recsys.algorithm.VERBOSE = False
 import sys
 
 class Recommender():
@@ -60,7 +65,6 @@ class Recommender():
         scores=[(self._sim_cosine(prefs, person, other), other) for other in prefs if other != person]
         scores.sort() 
         scores.reverse() 
-        cnt = 0
         return scores[0:n]
 
     def _itemSim(self, train):
@@ -174,45 +178,55 @@ class Recommender():
 
         recall = hit * 1.0 / n_recall
         precision = hit * 1.0 / n_precision
-        print 'Precision:\t', hit * 1.0 / n_precision
-        print 'Recall: \t', hit * 1.0 / n_recall
+        # print 'Precision:\t', hit * 1.0 / n_precision
+        # print 'Recall: \t', hit * 1.0 / n_recall
         return round(precision, 3), round(recall, 3)
 
 if __name__ == '__main__':
     # Prepare train and test data
     test_file = DataSet('test_all.csv')
-
     svd_train_con = Data()
-    svd_train_con.load('cf/randUser/Content/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-    remap_con = 'cf/randUser/Content/remap1.csv'
-    train_file_con = 'cf/randUser/Content/rate1.csv'
+    svd_train_con.load('cf/onedaySet/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    remap_con = 'cf/onedaySet/Content/remap2.csv'
+    train_file_con = 'cf/onedaySet/Content/rate2.csv'
     train_prefs_con = prepare_train(train_file_con)
     test_con = make_test_dict(test_file, -1, 1)
     rec_con = Recommender(train_prefs_con, test_con, remap_con, svd_train_con)
 
     svd_train = Data()
-    svd_train.load('cf/randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-    remap = 'cf/randUser/remap1.csv'
-    train_file = 'cf/randUser/rate1.csv'
+    svd_train.load('cf/onedaySet/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    remap = 'cf/onedaySet/remap2.csv'
+    train_file = 'cf/onedaySet/rate2.csv'
     train_prefs = prepare_train(train_file)
     test = make_test_dict(test_file, -1, 2)
     rec = Recommender(train_prefs, test, remap, svd_train)
 
-    # Calculate precision recall
-    print 'SVD CONTENT'
-    rec_con.precision_recall(n=5, k=3, rec_algorithm=Recommender.svd_recommend)
-    print '-' * 100
-    print 'ICF CONTENT'
-    rec_con.precision_recall(n=5, k=5, rec_algorithm=Recommender.icf_recommend)
-    print '-' * 100
-    print 'UCF CONTENT'
-    rec_con.precision_recall(n=5, k=5, rec_algorithm=Recommender.ucf_recommend)
-    print '*' * 100
-    print 'SVD'
-    rec.precision_recall(n=5, k=5, rec_algorithm=Recommender.svd_recommend)
-    print '-' * 100
-    print 'ICF'
-    rec.precision_recall(n=5, k=5, rec_algorithm=Recommender.icf_recommend)
-    print '-' * 100
-    print 'UCF'
-    rec.precision_recall(n=5, k=5, rec_algorithm=Recommender.ucf_recommend)
+    for i in range(1, 6):
+        # Calculate precision recall
+        a = []
+        # print 'SVD CONTENT'
+        pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.svd_recommend)
+        a.append(str(pre))
+        a.append(str(recall))
+        # print 'ICF CONTENT'
+        pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
+        a.append(str(pre))
+        a.append(str(recall))
+        # print 'UCF CONTENT'
+        pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
+        a.append(str(pre))
+        a.append(str(recall))
+        # print 'SVD'
+        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.svd_recommend)
+        a.append(str(pre))
+        a.append(str(recall))
+        # print 'ICF'
+        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
+        a.append(str(pre))
+        a.append(str(recall))
+        # print 'UCF'
+        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
+        a.append(str(pre))
+        a.append(str(recall))
+
+        print str(i) + ',', ','.join(a)

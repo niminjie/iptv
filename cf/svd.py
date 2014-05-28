@@ -12,27 +12,28 @@ def main():
     svd = SVD()
     train = Data()
     test = Data()
-    train.load('./u1.base', force=True, sep='\t', format={'col':0, 'row':1, 'value':2, 'ids':int})
-    test.load('./u1.test', force=True, sep='\t', format={'col':0, 'row':1, 'value':2, 'ids':int})
+    train.load('randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':int})
+    test.load('randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':int})
     svd.set_data(train)
     svd.compute(k=100, min_values=0.5, pre_normalize=False, mean_center=True, post_normalize=True)
 
-    rmse = RMSE()
-    mae = MAE()
-    for rating, item_id, user_id in test.get():
-        try:
-            pred_rating = svd.predict(item_id, user_id)
-            rmse.add(rating, pred_rating)
-            mae.add(rating, pred_rating)
-        except KeyError:
-            continue
-    print 'RMSE=%s' % rmse.compute()
-    print 'MAE=%s' % mae.compute()
+    # rmse = RMSE()
+    # mae = MAE()
+    # for rating, item_id, user_id in test.get():
+    #     try:
+    #         pred_rating = svd.predict(item_id, user_id)
+    #         rmse.add(rating, pred_rating)
+    #         mae.add(rating, pred_rating)
+    #     except KeyError:
+    #         continue
+    # print 'RMSE=%s' % rmse.compute()
+    # print 'MAE=%s' % mae.compute()
 
-    test = make_test()
-    print precision_and_recall(test, svd)
+    # test = make_test()
+    # print precision_and_recall(test, svd)
     # rec_list = svd.recommend(200, n=5, only_unknowns=False, is_row=False)
-    # print svd.recommend(1, n=5, only_unknowns=False, is_row=False)
+    print svd.recommend(1, n=5, only_unknowns=False, is_row=False)
+
     # print svd.recommend(2, n=5, only_unknowns=False, is_row=False)
     # print svd.recommend(3, n=5, only_unknowns=False, is_row=False)
     # print svd.recommend(4, n=5, only_unknowns=False, is_row=False)
@@ -41,7 +42,6 @@ def main():
     # print svd.recommend(7, n=5, only_unknowns=False, is_row=False)
     # print svd.recommend(8, n=5, only_unknowns=False, is_row=False)
     # print svd.recommend(9, n=5, only_unknowns=False, is_row=False)
-
 
 def make_test():
     test = {}
