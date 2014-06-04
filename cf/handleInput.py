@@ -1,4 +1,5 @@
 import random
+import re
 import myPickle
 DEBUG = False
 
@@ -24,7 +25,7 @@ def process_rate(fi, fo):
     new_dict = {}
     times = {}
     for line in fi:
-        user, class_name, rate = line.split(',')
+        user, class_name, rate, interval = line.split(',')
         user = int(user)
         rate = float(rate.strip())
 
@@ -41,6 +42,24 @@ def process_rate(fi, fo):
             fo.write('%s,%s,%s\n' % (user, class_name, play / times[(user, class_name)]))
             fo.flush()
     fo.close()
+
+
+def delete_char(str, cd):
+    for c in cd:
+        str = str.replace(c, '')
+    return str
+
+def convert_interval(interval):
+    '''
+        Convert interval : (0,4), (10,15), (16,18) ---> 0-4;10-15;16-18
+    '''
+    # print interval
+    pattern = re.compile('\(\d+,\s\d+\)')
+    match = pattern.findall(interval)
+    for idx, inter in enumerate(match):
+        # match[idx] = inter.replace('(', '').replace(')', '').replace(',', '-')
+        match[idx] = delete_char(inter, ['(', ')', ' ']).replace(',', '-')
+    return ';'.join(match)
 
 def process_mergeuser(prefs, fo, user_remap):
     '''
@@ -59,12 +78,14 @@ def process_mergeuser(prefs, fo, user_remap):
             tag = play['tag']
             class_name = play['class_name']
             rate = play['rate']
+            interval = play['interval']
             if tag not in uniq_tag.keys():
                 user += 1
                 uniq_tag.setdefault(tag, user)
-                user_remap.write('%s,%s,%s\n' % (user_id, tag, user))
+                user_remap.write('%s,%s,%s,%s\n' % (user_id, tag, user, convert_interval(interval)))
                 user_remap.flush()
-            fo.write('%s,%s,%s\n' % (uniq_tag[tag], class_name, rate))
+            fo.write('%s,%s,%s,%s\n' % (uniq_tag[tag], class_name, rate, convert_interval(interval)))
+            #print interval
             fo.flush()
     fo.close()
     user_remap.close()
@@ -86,12 +107,13 @@ def process_mergeuser_content(prefs, fo, user_remap):
             tag = play['tag']
             content_id = play['content_id']
             rate = play['rate']
+            interval = play['interval']
             if tag not in uniq_tag.keys():
                 user += 1
                 uniq_tag.setdefault(tag, user)
-                user_remap.write('%s,%s,%s\n' % (user_id, tag, user))
+                user_remap.write('%s,%s,%s,%s\n' % (user_id, tag, user, convert_interval(interval)))
                 user_remap.flush()
-            fo.write('%s,%s,%s\n' % (uniq_tag[tag], content_id, rate))
+            fo.write('%s,%s,%s,%s\n' % (uniq_tag[tag], content_id, rate, convert_interval(interval)))
             fo.flush()
     fo.close()
     user_remap.close()
@@ -189,25 +211,26 @@ if __name__ == '__main__':
     train_pre = {}
     ''' Time tag '''
     # process_input(train_pre, 'randUser/randUser1.csv')
-    # process_mergeuser(train_pre, open('randUser/DiffRate/merge1.csv', 'w'), open('randUser/DiffRate/remap1.csv', 'w'))
-    # process_rate(open('randUser/DiffRate/merge1.csv'), open('randUser/DiffRate/rate1.csv', 'w'))
+    # print train_pre
+    # process_mergeuser(train_pre, open('randUser/merge1.csv', 'w'), open('randUser/remap1.csv', 'w'))
+    # process_rate(open('randUser/merge1.csv'), open('randUser/rate1.csv', 'w'))
     'Test ---------------------------------------------------------------------'
     # process_input(train_pre, 'Test/test_tag_result.csv')
     # process_mergeuser(train_pre, open('Test/test_merge1.csv', 'w'), open('Test/test_remap1.csv', 'w'))
     # process_rate(open('Test/test_merge1.csv'), open('Test/test_rate1.csv', 'w'))
     ''' No Tag '''
-    # process_input_oneday(train_pre, 'randUser/randUser2.csv')
-    # process_mergeuser(train_pre, open('onedaySet/merge2.csv', 'w'), open('onedaySet/remap2.csv', 'w'))
-    # process_rate(open('onedaySet/merge2.csv'), open('onedaySet/rate2.csv', 'w'))
+    # process_input_oneday(train_pre, 'randUser/randUser1.csv')
+    # process_mergeuser(train_pre, open('onedaySet/merge1.csv', 'w'), open('onedaySet/remap1.csv', 'w'))
+    # process_rate(open('onedaySet/merge1.csv'), open('onedaySet/rate1.csv', 'w'))
     ''' Content_id based tag '''
-    # process_input(train_pre, 'randUser/Content/randUser2.csv')
-    # process_mergeuser_content(train_pre, open('randUser/Content/merge2.csv', 'w'), open('randUser/Content/remap2.csv', 'w'))
-    # process_rate(open('randUser/Content/merge2.csv'), open('randUser/Content/rate2.csv', 'w'))
+    # process_input(train_pre, 'randUser/Content/randUser1.csv')
+    # process_mergeuser_content(train_pre, open('randUser/Content/merge1.csv', 'w'), open('randUser/Content/remap1.csv', 'w'))
+    # process_rate(open('randUser/Content/merge1.csv'), open('randUser/Content/rate1.csv', 'w'))
     'Test ---------------------------------------------------------------------'
     # process_input(train_pre, 'Test/test_tag_result.csv')
     # process_mergeuser_content(train_pre, open('Test/test_merge1.csv', 'w'), open('Test/test_remap1.csv', 'w'))
     # process_rate(open('Test/test_merge1.csv'), open('Test/test_rate1.csv', 'w'))
     ''' Content_id based no tag '''
-    # process_input_oneday(train_pre, 'randUser/randUser2.csv')
-    # process_mergeuser_content(train_pre, open('onedaySet/Content/merge2.csv', 'w'), open('onedaySet/Content/remap2.csv', 'w'))
-    # process_rate(open('onedaySet/Content/merge2.csv'), open('onedaySet/Content/rate2.csv', 'w'))
+    # process_input_oneday(train_pre, 'randUser/randUser1.csv')
+    # process_mergeuser_content(train_pre, open('onedaySet/Content/merge1.csv', 'w'), open('onedaySet/Content/remap1.csv', 'w'))
+    # process_rate(open('onedaySet/Content/merge1.csv'), open('onedaySet/Content/rate1.csv', 'w'))

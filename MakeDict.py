@@ -33,7 +33,7 @@ def to_dict_byUser(data, columns, user_id_idx):
         user_dict[user_id].append(arr)
     return user_dict
 
-def make_test_dict(data, user_idx, class_idx):
+def make_test_dict(data, user_idx, class_idx, start_idx):
     '''
     Args:
         data:      Contains many tuple ('user_id','content_id', ...)
@@ -47,8 +47,10 @@ def make_test_dict(data, user_idx, class_idx):
         user_id = line[user_idx]
         user_dict.setdefault(user_id, [])
         class_name = line[class_idx]
+        # Get start time's hour
+        starttime = line[start_idx][11:13]
         if class_name not in user_dict[user_id]:
-            user_dict[user_id].append(class_name)
+            user_dict[user_id].append({class_name:starttime})
     return user_dict
 
 # train = DataSet('train_all.csv')

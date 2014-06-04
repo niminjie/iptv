@@ -17,6 +17,7 @@ class Recommender():
     def __init__(self, train, test, remap, svd_train):
         self.train_set = train
         self.test_set = test
+        # print remap
         self.remap = self._get_remap(remap)
         self.W = self._reverse_user_item()
 
@@ -46,6 +47,7 @@ class Recommender():
         mod1 = 0.0
         mod2 = 0.0
         metrix = 0.0
+        # print prefs
         for key,value in prefs[p1].items():
             if key in prefs[p2]:
                 metrix = metrix + value * prefs[p2][key] 
@@ -94,15 +96,22 @@ class Recommender():
 
     def _get_remap(self, fi):
         remap = {}
+        # Which contains {'1':'0-4', '2':'12-14;14-20'}
+        user2inter = {}
         for line in open(fi):
-            user_id, tag, user = line.split(',')
+            user_id, tag, user, interval = line.split(',')
+            user2inter[user] = interval.strip()
             remap[user.strip()] = user_id
+        # print remap
+        # print user2inter
         merge_remap = {}
         for user, user_id in remap.items():
             merge_remap.setdefault(user_id, [])
             for user2, user_id2 in remap.items():
-                if user_id == user_id2 and user2 not in merge_remap[user_id]:
-                    merge_remap[user_id].append(user2)
+                user2_key = [user2, user2inter[user2]]
+                if user_id == user_id2 and user2_key not in merge_remap[user_id]:
+                    merge_remap[user_id].append(user2_key)
+        # print merge_remap
         return merge_remap
 
     def ucf_recommend(self, person, n=5, k=5):
@@ -147,86 +156,157 @@ class Recommender():
         rank_reverse = [(i[1], i[0].encode('utf-8')) for i in rank]
         return rank_reverse
 
+    def pick(self, person, rec_list, k):
+        '''
+            This function pick recommended items from a rec list for each tag.
+            Every tag
+        '''
+        # Recommended list of all tags
+        merge = []
+        # Map tag to (score, itemname)
+        searching_scoreitem = {}
+        # Handle uniq item in recommended list
+        uniq_item = []
+
+        for time, rec in rec_list.items():
+            # print time
+            # print rec
+            for r in rec:
+                searching_scoreitem[str(r[0]) + ',' + r[1]] = time
+            merge += rec
+        #print searching_scoreitem
+        merge.sort()
+        merge.reverse()
+        topN = {}
+        i = 0
+        while(len(topN) < 5 and i < len(merge)):
+            if merge[i][1] in uniq_item:
+                continue
+            key = str(merge[i][0]) + ',' + merge[i][1]
+            topN[key] = searching_scoreitem[key]
+            i += 1
+        return topN
+    
+
+    def is_cross_time(self, times, tu_time):
+        time = times.split(';')
+        for interval in time:
+            start = interval.split('-')[0]
+            end = interval.split('-')[1]
+            # print tu_time
+            # print start, end
+            # print '-' * 50
+            if tu_time < end and tu_time >= start:
+                return True
+        return False
+
+    def is_hit(self, item_name, times, tu):
+        # print item_name
+        # print start, end
+        # print tu
+        for test_item in tu:
+            if item_name == test_item.keys()[0] and self.is_cross_time(times, test_item[test_item.keys()[0]]):
+                # print 'hit'
+            # if item_name == test_item.keys()[0]:
+                # print test_item[test_item.keys()[0]]
+                # print times
+                # print '-' * 50
+                return True
+        # print '-' * 50
+        return False
+
     def precision_recall(self, n=5, k=5, rec_algorithm=ucf_recommend):
         # print("n = %d, k = %d" %(n, k))
         hit = 0
         n_recall = 0
         n_precision = 0
         for person in self.remap:
+            # print '*' * 50
+            # print self.remap
             # Exclude new user in test dastaset
             if person not in self.test_set:
                 continue
             # Get different tag of one user '03EF1230124124' --->  [123,124,125]
             person2id_list = self.remap[person]
+            # print person2id_list
+            # print person2id_list
             # Handle each tag recommend list
-            all_rec_result = []
+            all_rec_result = {}
             tu = self.test_set[person]
+            # print '*' * 50
             for each_tag in person2id_list:
-                result = rec_algorithm(self, each_tag, n, k)
-                for item in result:
-                    all_rec_result.append(item[1])        
+                result = rec_algorithm(self, each_tag[0], n, k)
+                # Means that $person in $timetag: each_tag[1] recommend $result
+                # print person, each_tag[1], result
+                all_rec_result[each_tag[1]] = result
+
+            all_rec_result = self.pick(person, all_rec_result, k)
+            # print all_rec_result
             # Distinct same program 
-            all_rec_result = set(all_rec_result)
-            for item in all_rec_result:
-                if item in tu:
+            # all_rec_result = set(all_rec_result)
+            for item, time in all_rec_result.items():
+                item_name = item.split(',')[1]
+                # print item_name
+                # print time
+                if self.is_hit(item_name, time, tu):
                     hit += 1
             n_recall += len(tu)
             if k > len(all_rec_result):
                 n_precision += len(all_rec_result)
             else:
                 n_precision += k
-
         recall = hit * 1.0 / n_recall
         precision = hit * 1.0 / n_precision
         # print 'Precision:\t', hit * 1.0 / n_precision
         # print 'Recall: \t', hit * 1.0 / n_recall
+        # print precision, recall
+        print round(precision, 3), round(recall, 3)
         return round(precision, 3), round(recall, 3)
 
 if __name__ == '__main__':
     # Prepare train and test data
     test_file = DataSet('test_all.csv')
     svd_train_con = Data()
-    svd_train_con.load('cf/onedaySet/Content/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-    remap_con = 'cf/onedaySet/Content/remap2.csv'
-    train_file_con = 'cf/onedaySet/Content/rate2.csv'
+    svd_train_con.load('cf/randUser/Content/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    remap_con = 'cf/randUser/Content/remap1.csv'
+    train_file_con = 'cf/randUser/Content/rate1.csv'
     train_prefs_con = prepare_train(train_file_con)
-    test_con = make_test_dict(test_file, -1, 1)
+    test_con = make_test_dict(test_file, -1, 1, 3)
     rec_con = Recommender(train_prefs_con, test_con, remap_con, svd_train_con)
 
-    svd_train = Data()
-    svd_train.load('cf/onedaySet/rate2.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-    remap = 'cf/onedaySet/remap2.csv'
-    train_file = 'cf/onedaySet/rate2.csv'
-    train_prefs = prepare_train(train_file)
-    test = make_test_dict(test_file, -1, 2)
-    rec = Recommender(train_prefs, test, remap, svd_train)
+    # svd_train = Data()
+    # svd_train.load('cf/randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    # remap = 'cf/randUser/remap1.csv'
+    # train_file = 'cf/randUser/rate1.csv'
+    # train_prefs = prepare_train(train_file)
+    # test = make_test_dict(test_file, -1, 2, 3)
+    # rec = Recommender(train_prefs, test, remap, svd_train)
 
     for i in range(1, 6):
         # Calculate precision recall
         a = []
         # print 'SVD CONTENT'
-        pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.svd_recommend)
-        a.append(str(pre))
-        a.append(str(recall))
+        # pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.svd_recommend)
+        # a.append(str(pre))
+        # a.append(str(recall))
         # print 'ICF CONTENT'
         pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
-        a.append(str(pre))
-        a.append(str(recall))
+        # a.append(str(pre))
+        # a.append(str(recall))
         # print 'UCF CONTENT'
-        pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
-        a.append(str(pre))
-        a.append(str(recall))
+        # pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
+        # a.append(str(pre))
+        # a.append(str(recall))
         # print 'SVD'
-        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.svd_recommend)
-        a.append(str(pre))
-        a.append(str(recall))
+        # pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.svd_recommend)
+        # a.append(str(pre))
+        # a.append(str(recall))
         # print 'ICF'
-        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
-        a.append(str(pre))
-        a.append(str(recall))
+        # pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
+        # a.append(str(pre))
+        # a.append(str(recall))
         # print 'UCF'
-        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
-        a.append(str(pre))
-        a.append(str(recall))
-
-        print str(i) + ',', ','.join(a)
+        # pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
+        # a.append(str(pre))
+        # a.append(str(recall))
+        # print str(i) + ',', ','.join(a)

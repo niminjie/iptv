@@ -25,5 +25,3 @@ def test():
               [0, 0, 1, 0, 0, 0],
               [0, 0, 0, 0, 0, 0]]
     print find_connection(matrix)
-if __name__ == '__main__':
-    test()
