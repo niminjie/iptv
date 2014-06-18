@@ -161,6 +161,8 @@ class Recommender():
             This function pick recommended items from a rec list for each tag.
             Every tag
         '''
+        print 'Reclist'
+        print rec_list
         # Recommended list of all tags
         merge = []
         # Map tag to (score, itemname)
@@ -177,6 +179,7 @@ class Recommender():
         #print searching_scoreitem
         merge.sort()
         merge.reverse()
+        print 'Merge:', merge
         topN = {}
         i = 0
         while(len(topN) < 5 and i < len(merge)):
@@ -186,7 +189,6 @@ class Recommender():
             topN[key] = searching_scoreitem[key]
             i += 1
         return topN
-    
 
     def is_cross_time(self, times, tu_time):
         time = times.split(';')
@@ -200,11 +202,24 @@ class Recommender():
                 return True
         return False
 
+    def get_total_cross_time(self, times, tu):
+        total = 0
+        start = times.split('-')[0]
+        end = times.split('-')[1]
+        all_times = []
+        for l in tu:
+            all_times.append(l.values()[0])
+        for t in all_times:
+            if start <= t < end:
+                total += 1
+        return total
+
     def is_hit(self, item_name, times, tu):
         # print item_name
         # print start, end
         # print tu
         for test_item in tu:
+            # print "Test item", test_item
             if item_name == test_item.keys()[0] and self.is_cross_time(times, test_item[test_item.keys()[0]]):
                 # print 'hit'
             # if item_name == test_item.keys()[0]:
@@ -221,40 +236,91 @@ class Recommender():
         n_recall = 0
         n_precision = 0
         for person in self.remap:
-            # print '*' * 50
-            # print self.remap
             # Exclude new user in test dastaset
             if person not in self.test_set:
                 continue
+
             # Get different tag of one user '03EF1230124124' --->  [123,124,125]
             person2id_list = self.remap[person]
             # print person2id_list
-            # print person2id_list
+
             # Handle each tag recommend list
-            all_rec_result = {}
             tu = self.test_set[person]
             # print '*' * 50
             for each_tag in person2id_list:
+                all_rec_result = {}
                 result = rec_algorithm(self, each_tag[0], n, k)
                 # Means that $person in $timetag: each_tag[1] recommend $result
                 # print person, each_tag[1], result
+                # print 'Result:', result
                 all_rec_result[each_tag[1]] = result
+                num_tu = self.get_total_cross_time(each_tag[1], tu)
+                print 'Tu: ', tu
 
-            all_rec_result = self.pick(person, all_rec_result, k)
-            # print all_rec_result
-            # Distinct same program 
-            # all_rec_result = set(all_rec_result)
-            for item, time in all_rec_result.items():
-                item_name = item.split(',')[1]
-                # print item_name
-                # print time
-                if self.is_hit(item_name, time, tu):
-                    hit += 1
-            n_recall += len(tu)
-            if k > len(all_rec_result):
-                n_precision += len(all_rec_result)
-            else:
-                n_precision += k
+                # User didn't play any video in this time tag
+                if num_tu == 0:
+                    continue
+                # print result
+                for item in result:
+                    video = item[1]
+                    # print 'Recommend:', video, '\tIn tag:', each_tag[1], '\tFor user:', person
+                    if self.is_hit(video, each_tag[1], tu):
+                        hit += 1
+                    n_recall += num_tu
+                    if k > len(result):
+                        n_precision += len(result)
+                    else:
+                        n_precision += k
+
+        recall = hit * 1.0 / n_recall
+        precision = hit * 1.0 / n_precision
+        # print 'Precision:\t', hit * 1.0 / n_precision
+        # print 'Recall: \t', hit * 1.0 / n_recall
+        # print precision, recall
+        print round(precision, 3), round(recall, 3)
+        return round(precision, 3), round(recall, 3)
+
+    def precision_recall_2(self, n=5, k=5, rec_algorithm=ucf_recommend):
+        # print("n = %d, k = %d" %(n, k))
+        hit = 0
+        n_recall = 0
+        n_precision = 0
+        for person in self.remap:
+            # Exclude new user in test dastaset
+            if person not in self.test_set:
+                continue
+
+            # Get different tag of one user '03EF1230124124' --->  [123,124,125]
+            person2id_list = self.remap[person]
+            # print person2id_list
+
+            # Handle each tag recommend list
+            tu = self.test_set[person]
+            # print '*' * 50
+            for each_tag in person2id_list:
+                all_rec_result = {}
+                result = rec_algorithm(self, each_tag[0], n, k)
+                # Means that $person in $timetag: each_tag[1] recommend $result
+                # print person, each_tag[1], result
+                # print 'Result:', result
+                all_rec_result[each_tag[1]] = result
+                num_tu = self.get_total_cross_time(each_tag[1], tu)
+
+                # User didn't play any video in this time tag
+                if num_tu == 0:
+                    continue
+                # print result
+                for item in result:
+                    video = item[1]
+                    # print 'Recommend:', video, '\tIn tag:', each_tag[1], '\tFor user:', person
+                    if self.is_hit(video, each_tag[1], tu):
+                        hit += 1
+                    n_recall += num_tu
+                    if k > len(result):
+                        n_precision += len(result)
+                    else:
+                        n_precision += k
+
         recall = hit * 1.0 / n_recall
         precision = hit * 1.0 / n_precision
         # print 'Precision:\t', hit * 1.0 / n_precision
@@ -266,21 +332,21 @@ class Recommender():
 if __name__ == '__main__':
     # Prepare train and test data
     test_file = DataSet('test_all.csv')
-    svd_train_con = Data()
-    svd_train_con.load('cf/randUser/Content/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-    remap_con = 'cf/randUser/Content/remap1.csv'
-    train_file_con = 'cf/randUser/Content/rate1.csv'
-    train_prefs_con = prepare_train(train_file_con)
-    test_con = make_test_dict(test_file, -1, 1, 3)
-    rec_con = Recommender(train_prefs_con, test_con, remap_con, svd_train_con)
+    # svd_train_con = Data()
+    # svd_train_con.load('cf/randUser/Content/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    # remap_con = 'cf/randUser/Content/remap1.csv'
+    # train_file_con = 'cf/randUser/Content/rate1.csv'
+    # train_prefs_con = prepare_train(train_file_con)
+    # test_con = make_test_dict(test_file, -1, 1, 3)
+    # rec_con = Recommender(train_prefs_con, test_con, remap_con, svd_train_con)
 
-    # svd_train = Data()
-    # svd_train.load('cf/randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
-    # remap = 'cf/randUser/remap1.csv'
-    # train_file = 'cf/randUser/rate1.csv'
-    # train_prefs = prepare_train(train_file)
-    # test = make_test_dict(test_file, -1, 2, 3)
-    # rec = Recommender(train_prefs, test, remap, svd_train)
+    svd_train = Data()
+    svd_train.load('cf/randUser/rate1.csv', force=True, sep=',', format={'col':0, 'row':1, 'value':2, 'ids':str})
+    remap = 'cf/randUser/remap1.csv'
+    train_file = 'cf/randUser/rate1.csv'
+    train_prefs = prepare_train(train_file)
+    test = make_test_dict(test_file, -1, 2, 3)
+    rec = Recommender(train_prefs, test, remap, svd_train)
 
     for i in range(1, 6):
         # Calculate precision recall
@@ -290,7 +356,7 @@ if __name__ == '__main__':
         # a.append(str(pre))
         # a.append(str(recall))
         # print 'ICF CONTENT'
-        pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
+        # pre, recall = rec_con.precision_recall(n=5, k = i, rec_algorithm=Recommender.icf_recommend)
         # a.append(str(pre))
         # a.append(str(recall))
         # print 'UCF CONTENT'
@@ -306,7 +372,7 @@ if __name__ == '__main__':
         # a.append(str(pre))
         # a.append(str(recall))
         # print 'UCF'
-        # pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
+        pre, recall = rec.precision_recall(n=5, k = i, rec_algorithm=Recommender.ucf_recommend)
         # a.append(str(pre))
         # a.append(str(recall))
         # print str(i) + ',', ','.join(a)
